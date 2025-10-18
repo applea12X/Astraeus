@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import sunImage from '../assets/sun.png';
+import NeptuneSpaceship from './ui/NeptuneSpaceship';
 
-const SolarSystem = () => {
+const SolarSystem = ({ onNavigate }) => {
+  const [showSpaceship, setShowSpaceship] = useState(false);
+  const [spaceshipStartPos, setSpaceshipStartPos] = useState({ x: 0, y: 0 });
+  const neptuneRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -16,6 +20,24 @@ const SolarSystem = () => {
     { id: 8, name: 'Neptune', size: 95, color: '#4166F5' }
   ];
   const planets = basePlanets.map((p, i) => ({ ...p, distance: startOffsetPx + i * spacingPx }));
+
+  const handleNeptuneClick = (e) => {
+    if (neptuneRef.current) {
+      const rect = neptuneRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      setSpaceshipStartPos({ x: centerX, y: centerY });
+      setShowSpaceship(true);
+    }
+  };
+
+  const handleAnimationComplete = () => {
+    // Navigate to Neptune page after animation
+    if (onNavigate) {
+      onNavigate('neptune');
+    }
+  };
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-x-auto overflow-y-hidden bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
@@ -54,8 +76,11 @@ const SolarSystem = () => {
        {planets.map((planet, index) => ( <div key={planet.id} className="absolute" style={{
         right: `${planet.distance}px` }} > 
         {/* Planet */} 
-        <div className="relative rounded-full shadow-2xl" 
-        style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
+        <div 
+          ref={planet.id === 8 ? neptuneRef : null}
+          onClick={planet.id === 8 ? handleNeptuneClick : undefined}
+          className={`relative rounded-full shadow-2xl ${planet.id === 8 ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
+          style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
                 <img 
                   src={sunImage} 
                   alt={planet.name} 
@@ -102,6 +127,14 @@ const SolarSystem = () => {
       {/* Ambient light effects (static) */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      
+      {/* Spaceship animation */}
+      {showSpaceship && (
+        <NeptuneSpaceship 
+          startPosition={spaceshipStartPos} 
+          onAnimationComplete={handleAnimationComplete} 
+        />
+      )}
     </div>
   );
 };
