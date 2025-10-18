@@ -3,6 +3,7 @@ import './App.css';
 import LandingPage from './components/LandingPage';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
+import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -15,7 +16,8 @@ function App() {
     <>
       {currentPage === 'landing' && <LandingPage onNavigate={() => handleNavigate('solar-system')} />}
       {currentPage === 'solar-system' && <SolarSystem onNavigate={handleNavigate} />}
-      {currentPage === 'neptune' && <NeptunePage />}
+      {currentPage === 'neptune' && <NeptunePage onNavigate={handleNavigate} />}
+      {currentPage === 'financial-info' && <FinancialInfoPage onNavigate={handleNavigate} />}
     </>
   );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const NeptunePage = () => {
+const NeptunePage = ({ onNavigate }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -127,9 +127,7 @@ const NeptunePage = () => {
             <h1 className="text-7xl font-bold text-white drop-shadow-2xl mb-4">
               Welcome to Neptune
             </h1>
-            <p className="text-2xl text-blue-100 drop-shadow-lg mb-8">
-              The Ice Giant of Finance
-            </p>
+            
             
             {/* Interactive content area */}
             <motion.div
@@ -139,30 +137,25 @@ const NeptunePage = () => {
               className="mt-12 bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-2xl mx-auto border border-white/20"
             >
               <h2 className="text-3xl font-semibold text-white mb-4">
-                Your Financial Adventure Begins
+                Your Adventure Begins
               </h2>
               <p className="text-lg text-blue-50 leading-relaxed">
-                Neptune represents the deep, mysterious waters of advanced financial planning. 
-                Here you'll learn about long-term investments, retirement planning, and building 
-                lasting wealth for your future.
+                Neptune represents your introduction to the world of Toyota Financial.
+                Here you'll enter your preliminary financial information to get started.
               </p>
               
-              {/* Placeholder for future content */}
-              <div className="mt-8 grid grid-cols-3 gap-4">
-                {['Investments', 'Retirement', 'Savings'].map((topic, i) => (
-                  <motion.button
-                    key={topic}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 1.5 + i * 0.1 }}
-                    className="bg-gradient-to-br from-blue-500 to-blue-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-shadow"
-                  >
-                    {topic}
-                  </motion.button>
-                ))}
-              </div>
+              {/* Next button */}
+              <motion.button
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 1.8 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavigate && onNavigate('financial-info')}
+                className="mt-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Next →
+              </motion.button>
             </motion.div>
           </motion.div>
         </div>

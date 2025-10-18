@@ -14,28 +14,42 @@ const NeptuneSpaceship = ({ startPosition, onAnimationComplete }) => {
   const opacity = useMotionValue(1);
 
   useEffect(() => {
+    // Set initial position completely off-screen (above viewport)
+    const initialX = window.innerWidth / 2 - HALF_SHIP;
+    const initialY = -200; // Start well above the screen
+    
+    // Set starting values
+    x.set(initialX);
+    y.set(initialY);
+    scale.set(0.4);
+    rotate.set(45);
+    opacity.set(1);
+
     const sequence = async () => {
-      // Phase 1: Take off from Neptune (lift up and grow)
+      // Phase 1: Approach Neptune from distance
       // Duration: 1.5 seconds
       await Promise.all([
-        animate(y, startPosition.y - 300, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
-        animate(scale, 0.8, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
-        animate(rotate, -20, { duration: 1.5, ease: [0.4, 0, 0.2, 1] })
+        animate(x, startPosition.x - 150, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
+        animate(y, startPosition.y - 100, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
+        animate(scale, 0.7, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
+        animate(rotate, 0, { duration: 1.5, ease: [0.4, 0, 0.2, 1] })
       ]);
 
-      // Phase 2: Accelerate across the screen (zoom forward)
-      // Duration: 1.5 seconds
-      await Promise.all([
-        animate(x, window.innerWidth / 2, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
-        animate(y, window.innerHeight / 2, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
-        animate(scale, 1.5, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
-        animate(rotate, 0, { duration: 1, ease: [0.4, 0, 0.2, 1] })
-      ]);
-
-      // Phase 3: Zoom towards camera (scale up dramatically)
+      // Phase 2: Close approach to Neptune
       // Duration: 1 second
       await Promise.all([
-        animate(scale, 4, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
+        animate(x, startPosition.x - HALF_SHIP, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
+        animate(y, startPosition.y - HALF_SHIP, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
+        animate(scale, 0.9, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
+        animate(rotate, -15, { duration: 1, ease: [0.4, 0, 0.2, 1] })
+      ]);
+
+      // Phase 3: Dive into Neptune (shrink and fade)
+      // Duration: 0.8 seconds
+      await Promise.all([
+        animate(x, startPosition.x - HALF_SHIP + 20, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
+        animate(y, startPosition.y - HALF_SHIP + 10, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
+        animate(scale, 0.2, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
         animate(opacity, 0, { duration: 0.8, ease: [0.4, 0, 0.2, 1] })
       ]);
 
@@ -46,7 +60,7 @@ const NeptuneSpaceship = ({ startPosition, onAnimationComplete }) => {
     };
 
     sequence();
-  }, [startPosition, onAnimationComplete]);
+  }, [startPosition, onAnimationComplete, x, y, scale, rotate, opacity]);
 
   return (
     <motion.div
