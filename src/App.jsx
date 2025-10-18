@@ -5,12 +5,13 @@ import { auth } from './firebase/config';
 import LandingPage from './components/LandingPage';
 import SignInForm from './components/ui/SignInForm';
 import SignUpForm from './components/ui/SignUpForm';
+import SolarSystem from './components/SolarSystem';
+import NeptunePage from './components/NeptunePage';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
+  const [currentPage, setCurrentPage] = useState('landing');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -21,6 +22,10 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  const handleNavigate = (page) => {
+    setCurrentPage(page);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -29,32 +34,37 @@ function App() {
     );
   }
 
-  if (showSignUp) {
-    return (
-      <SignUpForm 
-        onSignIn={() => {
-          setShowSignUp(false);
-          setShowSignIn(true);
-        }}
-      />
-    );
-  }
-
-  if (showSignIn) {
+  // Navigation between different pages
+  if (currentPage === 'sign-in') {
     return (
       <SignInForm 
-        onSignUp={() => {
-          setShowSignIn(false);
-          setShowSignUp(true);
-        }}
+        onSignUp={() => handleNavigate('sign-up')}
       />
     );
   }
 
+  if (currentPage === 'sign-up') {
+    return (
+      <SignUpForm 
+        onSignIn={() => handleNavigate('sign-in')}
+      />
+    );
+  }
+
+  if (currentPage === 'solar-system') {
+    return <SolarSystem onNavigate={handleNavigate} />;
+  }
+
+  if (currentPage === 'neptune') {
+    return <NeptunePage />;
+  }
+
+  // Landing page (default)
   return (
     <LandingPage 
-      onSignIn={() => setShowSignIn(true)}
-      onSignUp={() => setShowSignUp(true)} 
+      onSignIn={() => handleNavigate('sign-in')}
+      onSignUp={() => handleNavigate('sign-up')}
+      onNavigate={() => handleNavigate('solar-system')}
       user={user} 
     />
   );

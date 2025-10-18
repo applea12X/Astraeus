@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import AnimatedShaderBackground from '../components/ui/animated-shader-background';
+import GalaxyButton from './ui/GalaxyButton';
 
-const LandingPage = ({ onSignIn, onSignUp, user }) => {
+const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -82,42 +83,31 @@ const LandingPage = ({ onSignIn, onSignUp, user }) => {
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 1 }}
-                  className="text-center"
+                  className="flex flex-col sm:flex-row gap-6 items-center"
                 >
-                  <p className="text-white text-lg mb-4">
-                    Welcome back, {user.displayName || user.email}!
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => signOut(auth)}
-                    className="px-10 py-3 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white text-lg font-bold rounded-full shadow-2xl hover:bg-white/20 transition-all duration-300"
-                  >
+                  <div className="text-white text-xl mb-4 sm:mb-0">
+                    Welcome, {user.displayName || user.email}!
+                  </div>
+                  <GalaxyButton onClick={onNavigate} className="min-w-52">
+                    Start Journey
+                  </GalaxyButton>
+                  <GalaxyButton onClick={() => signOut(auth)} className="min-w-52">
                     Sign Out
-                  </motion.button>
+                  </GalaxyButton>
                 </motion.div>
               ) : (
                 <>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onSignIn}
-                    className="px-10 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white text-lg font-bold rounded-full shadow-2xl hover:shadow-red-500/50 transition-all duration-300"
-                    style={{
-                      boxShadow: '0 0 30px rgba(239, 68, 68, 0.5)'
-                    }}
-                  >
+                  <GalaxyButton onClick={onSignIn} className="min-w-52">
                     Sign In
-                  </motion.button>
+                  </GalaxyButton>
 
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onSignUp}
-                    className="px-10 py-3 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white text-lg font-bold rounded-full shadow-2xl hover:bg-white/20 transition-all duration-300"
-                  >
+                  <GalaxyButton onClick={onSignUp} className="min-w-52">
                     Sign Up
-                  </motion.button>
+                  </GalaxyButton>
+
+                  <GalaxyButton onClick={onNavigate} className="min-w-52">
+                    Start Journey
+                  </GalaxyButton>
                 </>
               )}
             </motion.div>
@@ -146,4 +136,3 @@ const LandingPage = ({ onSignIn, onSignUp, user }) => {
 };
 
 export default LandingPage;
-
