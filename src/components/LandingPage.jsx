@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AnimatedShaderBackground from './ui/animated-shader-background';
-import SpaceshipMascot from './ui/spaceship-mascot';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase/config';
+import AnimatedShaderBackground from '../components/ui/animated-shader-background';
 import GalaxyButton from './ui/GalaxyButton';
 
-const LandingPage = ({ onNavigate }) => {
-  const [showContent, setShowContent] = useState(false);
-
-  const handleAnimationComplete = () => {
-    setShowContent(true);
-  };
+const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -27,12 +23,9 @@ const LandingPage = ({ onNavigate }) => {
         <AnimatedShaderBackground />
       </div>
 
-      {/* Spaceship Mascot Animation */}
-      <SpaceshipMascot onAnimationComplete={handleAnimationComplete} />
-
-      {/* Main Content - Fades in after spaceship animation */}
+      {/* Main Content - Fades in automatically */}
       <AnimatePresence>
-        {showContent && (
+        {true && (
           <motion.div
             className="relative flex flex-col items-center justify-center h-full px-4"
             style={{ zIndex: 10 }}
@@ -85,13 +78,38 @@ const LandingPage = ({ onNavigate }) => {
               transition={{ duration: 0.8, delay: 1 }}
               className="flex flex-col sm:flex-row gap-6 mb-10"
             >
-              <GalaxyButton className="min-w-52">Sign In</GalaxyButton>
+              {user ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 1 }}
+                  className="flex flex-col sm:flex-row gap-6 items-center"
+                >
+                  <div className="text-white text-xl mb-4 sm:mb-0">
+                    Welcome, {user.displayName || user.email}!
+                  </div>
+                  <GalaxyButton onClick={onNavigate} className="min-w-52">
+                    Start Journey
+                  </GalaxyButton>
+                  <GalaxyButton onClick={() => signOut(auth)} className="min-w-52">
+                    Sign Out
+                  </GalaxyButton>
+                </motion.div>
+              ) : (
+                <>
+                  <GalaxyButton onClick={onSignIn} className="min-w-52">
+                    Sign In
+                  </GalaxyButton>
 
-              <GalaxyButton className="min-w-52">Sign Up</GalaxyButton>
-              
-              <GalaxyButton className="min-w-52" onClick={onNavigate}>
-                Start Journey
-              </GalaxyButton>
+                  <GalaxyButton onClick={onSignUp} className="min-w-52">
+                    Sign Up
+                  </GalaxyButton>
+
+                  <GalaxyButton onClick={onNavigate} className="min-w-52">
+                    Start Journey
+                  </GalaxyButton>
+                </>
+              )}
             </motion.div>
 
             {/* Tagline */}
@@ -118,4 +136,3 @@ const LandingPage = ({ onNavigate }) => {
 };
 
 export default LandingPage;
-
