@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 
 const NeptunePage = ({ onNavigate }) => {
   return (
@@ -9,6 +10,17 @@ const NeptunePage = ({ onNavigate }) => {
       transition={{ duration: 1 }}
       className="fixed inset-0 w-screen h-screen overflow-hidden"
     >
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => onNavigate && onNavigate('solar-system')}
+        className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="font-semibold">Back to Solar System</span>
+      </motion.button>
       {/* Neptune-themed gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a237e] via-[#283593] to-[#3949ab]">
         {/* Animated stars */}

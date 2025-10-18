@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, Clock, User, GraduationCap, Home, Coffee } from 'lucide-react';
+import { Briefcase, Clock, User, GraduationCap, Home, Coffee, ArrowLeft } from 'lucide-react';
 import { IconGrid } from './ui/icon-set';
 
 const FinancialInfoPage = ({ onNavigate }) => {
@@ -125,8 +125,20 @@ const FinancialInfoPage = ({ onNavigate }) => {
         ))}
       </div>
 
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3 }}
+        onClick={() => onNavigate && onNavigate('neptune')}
+        className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="font-semibold">Back to Neptune</span>
+      </motion.button>
+
       {/* Title */}
-      <div className="fixed top-10 left-10 z-30">
+      <div className="fixed top-10 left-10 z-30 ml-48">
         <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-2">Financial Information</h1>
         <p className="text-xl text-blue-200">Tell us about your financial situation</p>
         <div className="mt-4 text-white/60">

@@ -75,7 +75,11 @@ function App() {
   }
 
   if (currentPage === 'neptune') {
-    return <NeptunePage />;
+    return <NeptunePage onNavigate={handleNavigate} />;
+  }
+
+  if (currentPage === 'financial-info') {
+    return <FinancialInfoPage onNavigate={handleNavigate} />;
   }
 
   if (currentPage === 'profile') {
