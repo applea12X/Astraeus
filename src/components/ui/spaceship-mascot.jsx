@@ -1,9 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, animate, useMotionValue } from 'framer-motion';
 import { Rocket } from 'lucide-react';
 
 const SpaceshipMascot = ({ onAnimationComplete }) => {
   const [showShip, setShowShip] = useState(true);
+
+  // Path setup for a smooth curve across the viewport
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const pathRef = useRef(null);
+  const pathD = useMemo(() => {
+    // Smooth S-curve from bottom-left (slightly offscreen) to top-right (slightly offscreen)
+    const startX = -0.1 * width;
+    const startY = 1.1 * height;
+    const c1X = 0.2 * width;
+    const c1Y = 0.85 * height;
+    const c2X = 0.35 * width;
+    const c2Y = 0.4 * height;
+    const midX = 0.6 * width;
+    const midY = 0.5 * height;
+    const s2X = 0.95 * width;
+    const s2Y = 0.1 * height;
+    const endX = 1.1 * width;
+    const endY = -0.1 * height;
+    return `M ${startX} ${startY} C ${c1X} ${c1Y}, ${c2X} ${c2Y}, ${midX} ${midY} S ${s2X} ${s2Y}, ${endX} ${endY}`;
+  }, [width, height]);
+
+  // Motion values for position and rotation
+  const x = useMotionValue(-200);
+  const y = useMotionValue(height + 100);
+  const rotate = useMotionValue(-45);
+  const progress = useMotionValue(0);
+
+  useEffect(() => {
+    // Animate progress along the path for smooth motion
+    const controls = animate(progress, 1, { duration: 4, ease: 'easeInOut' });
+
+    const path = pathRef.current;
+    if (path) {
+      const length = path.getTotalLength();
+      const unsubscribe = progress.on('change', (v) => {
+        const l = v * length;
+        const pt = path.getPointAtLength(l);
+        // Calculate tangent for rotation
+        const nextPt = path.getPointAtLength(Math.min(length, l + 1));
+        const angleDeg = (Math.atan2(nextPt.y - pt.y, nextPt.x - pt.x) * 180) / Math.PI;
+        x.set(pt.x);
+        y.set(pt.y);
+        rotate.set(angleDeg);
+      });
+      // Cleanup subscription
+      return () => {
+        controls.stop();
+        unsubscribe();
+      };
+    }
+
+    return () => controls.stop();
+  }, [progress, x, y, rotate]);
 
   useEffect(() => {
     // Hide spaceship after animation completes
@@ -20,35 +74,21 @@ const SpaceshipMascot = ({ onAnimationComplete }) => {
   if (!showShip) return null;
 
   return (
-    <motion.div
-      className="fixed z-50 pointer-events-none"
-      initial={{ x: -200, y: window.innerHeight + 100 }}
-      animate={{
-        x: [
-          -200,
-          window.innerWidth * 0.2,
-          window.innerWidth * 0.4,
-          window.innerWidth * 0.6,
-          window.innerWidth * 0.8,
-          window.innerWidth + 200
-        ],
-        y: [
-          window.innerHeight + 100,
-          window.innerHeight * 0.7,
-          window.innerHeight * 0.3,
-          window.innerHeight * 0.4,
-          window.innerHeight * 0.2,
-          -200
-        ],
-        rotate: [0, -15, -30, -20, -45, -60],
-        scale: [1, 1.2, 1, 1.1, 0.9, 0.7]
-      }}
-      transition={{
-        duration: 4,
-        ease: "easeInOut",
-        times: [0, 0.2, 0.4, 0.6, 0.8, 1]
-      }}
-    >
+    <>
+      {/* Invisible SVG path used to drive smooth motion */}
+      <svg
+        className="fixed inset-0 w-screen h-screen pointer-events-none"
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ opacity: 0 }}
+        aria-hidden="true"
+      >
+        <path ref={pathRef} d={pathD} fill="none" stroke="none" />
+      </svg>
+
+      <motion.div
+        className="fixed z-50 pointer-events-none"
+        style={{ x, y, rotate }}
+      >
       <div className="relative">
         {/* Spaceship Body */}
         <div className="relative w-32 h-32 flex items-center justify-center">
@@ -117,7 +157,8 @@ const SpaceshipMascot = ({ onAnimationComplete }) => {
           />
         ))}
       </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 
