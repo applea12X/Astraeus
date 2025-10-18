@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import sunImage from '../assets/sun.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 
@@ -41,6 +43,18 @@ const SolarSystem = ({ onNavigate }) => {
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-x-auto overflow-y-hidden bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => onNavigate && onNavigate('landing')}
+        className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="font-semibold">Back to Home</span>
+      </motion.button>
+
       {/* Stars Background (static) */}
       <div className="absolute inset-0">
         {[...Array(140)].map((_, i) => (
