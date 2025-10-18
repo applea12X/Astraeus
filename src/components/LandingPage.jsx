@@ -2,16 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
-import AnimatedShaderBackground from './ui/animated-shader-background';
-import SpaceshipMascot from './ui/spaceship-mascot';
-import GalaxyButton from './ui/GalaxyButton';
+import AnimatedShaderBackground from '../components/ui/animated-shader-background';
 
-const LandingPage = ({ onSignIn, user }) => {
-  const [showContent, setShowContent] = useState(false);
-
-  const handleAnimationComplete = () => {
-    setShowContent(true);
-  };
+const LandingPage = ({ onSignIn, onSignUp, user }) => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -29,12 +22,9 @@ const LandingPage = ({ onSignIn, user }) => {
         <AnimatedShaderBackground />
       </div>
 
-      {/* Spaceship Mascot Animation */}
-      <SpaceshipMascot onAnimationComplete={handleAnimationComplete} />
-
-      {/* Main Content - Fades in after spaceship animation */}
+      {/* Main Content - Fades in automatically */}
       <AnimatePresence>
-        {showContent && (
+        {true && (
           <motion.div
             className="relative flex flex-col items-center justify-center h-full px-4"
             style={{ zIndex: 10 }}
@@ -123,7 +113,7 @@ const LandingPage = ({ onSignIn, user }) => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={onSignIn}
+                    onClick={onSignUp}
                     className="px-10 py-3 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white text-lg font-bold rounded-full shadow-2xl hover:bg-white/20 transition-all duration-300"
                   >
                     Sign Up

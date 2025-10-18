@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/config';
 import LandingPage from './components/LandingPage';
-import SignInPage from './components/SignInPage';
+import SignInForm from './components/ui/SignInForm';
+import SignUpForm from './components/ui/SignUpForm';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -27,11 +29,35 @@ function App() {
     );
   }
 
-  if (showSignIn) {
-    return <SignInPage onBack={() => setShowSignIn(false)} />;
+  if (showSignUp) {
+    return (
+      <SignUpForm 
+        onSignIn={() => {
+          setShowSignUp(false);
+          setShowSignIn(true);
+        }}
+      />
+    );
   }
 
-  return <LandingPage onSignIn={() => setShowSignIn(true)} user={user} />;
+  if (showSignIn) {
+    return (
+      <SignInForm 
+        onSignUp={() => {
+          setShowSignIn(false);
+          setShowSignUp(true);
+        }}
+      />
+    );
+  }
+
+  return (
+    <LandingPage 
+      onSignIn={() => setShowSignIn(true)}
+      onSignUp={() => setShowSignUp(true)} 
+      user={user} 
+    />
+  );
 }
 
 export default App;
