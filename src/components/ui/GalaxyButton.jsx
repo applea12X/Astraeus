@@ -21,7 +21,7 @@ const GalaxyButton = ({ children, onClick, className = '' }) => {
       onClick={onClick}
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.97 }}
-      className={`relative overflow-hidden rounded-lg px-24 h-[45px] text-xl font-extrabold text-white border border-white/60 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-[box-shadow,filter] duration-300 ${className}`}
+      className={`galaxy-btn relative overflow-hidden rounded-lg px-24 h-[45px] text-xl font-extrabold text-white border border-white/60 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-[box-shadow,filter] duration-300 ${className}`}
       style={{
         WebkitTextStroke: '0 transparent'
       }}
@@ -52,7 +52,7 @@ const GalaxyButton = ({ children, onClick, className = '' }) => {
         className="absolute inset-0 rounded-[inherit] bg-white/5"/>
 
       {/* Label with hover/active style transitions */}
-      <span className="relative z-10 select-none transition-[text-shadow,opacity] duration-300">
+      <span className="label relative z-10 select-none transition-[text-shadow,opacity] duration-300">
         {children}
       </span>
 
@@ -67,5 +67,4 @@ const GalaxyButton = ({ children, onClick, className = '' }) => {
 };
 
 export default GalaxyButton;
-
 

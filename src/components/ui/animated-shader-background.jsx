@@ -149,4 +149,3 @@ const AnimatedShaderBackground = () => {
 };
 
 export default AnimatedShaderBackground;
-
