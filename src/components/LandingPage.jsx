@@ -1,11 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebase/config';
 import AnimatedShaderBackground from '../components/ui/animated-shader-background';
 import GalaxyButton from './ui/GalaxyButton';
+import UserProfileDropdown from './ui/UserProfileDropdown';
 
-const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
+const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, userProfile }) => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -22,6 +21,18 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
       <div className="fixed inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1, opacity: 0.4 }}>
         <AnimatedShaderBackground />
       </div>
+
+      {/* User Profile Dropdown - Top Right */}
+      {user && (
+        <div className="fixed top-6 right-6 z-50">
+          <UserProfileDropdown 
+            user={user}
+            userProfile={userProfile}
+            onViewProfile={onViewProfile}
+            onSettings={() => {}}
+          />
+        </div>
+      )}
 
       {/* Main Content - Fades in automatically */}
       <AnimatePresence>
@@ -83,16 +94,13 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 1 }}
-                  className="flex flex-col sm:flex-row gap-6 items-center"
+                  className="flex flex-col items-center gap-6"
                 >
-                  <div className="text-white text-xl mb-4 sm:mb-0">
-                    Welcome, {user.displayName || user.email}!
+                  <div className="text-white text-2xl font-bold">
+                    Welcome back, {userProfile?.firstName || user.displayName || 'Explorer'}!
                   </div>
                   <GalaxyButton onClick={onNavigate} className="min-w-52">
                     Start Journey
-                  </GalaxyButton>
-                  <GalaxyButton onClick={() => signOut(auth)} className="min-w-52">
-                    Sign Out
                   </GalaxyButton>
                 </motion.div>
               ) : (
