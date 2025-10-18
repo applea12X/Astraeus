@@ -4,6 +4,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import AnimatedShaderBackground from './ui/animated-shader-background';
 import SpaceshipMascot from './ui/spaceship-mascot';
+import GalaxyButton from './ui/GalaxyButton';
 
 const LandingPage = ({ onSignIn, user }) => {
   const [showContent, setShowContent] = useState(false);
@@ -18,7 +19,7 @@ const LandingPage = ({ onSignIn, user }) => {
       <div 
         className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(https://images.pexels.com/photos/956981/milky-way-starry-sky-night-sky-star-956981.jpeg?auto=compress&cs=tinysrgb&w=1920)',
+          backgroundImage: 'url(https://images.pexels.com/photos/8495477/pexels-photo-8495477.jpeg)',
           zIndex: 0
         }}
       />
@@ -46,15 +47,15 @@ const LandingPage = ({ onSignIn, user }) => {
               initial={{ opacity: 0, y: -50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="mb-6"
+              className="mb-12 -mt-24"
             >
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-6">
                 {/* Toyota Logo Image */}
-                <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
+                <div className="bg-white rounded-[2.5rem] overflow-hidden p-200 md:p-16 shadow-2xl">
                   <img 
-                    src="https://www.edigitalagency.com.au/wp-content/uploads/Toyota-logo-png-large-size-vertical.png" 
-                    alt="Toyota Logo"
-                    className="w-40 h-auto drop-shadow-2xl m-4"
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTGpPOmO3j2nk1h3x2XdI032elLVlQhBDv3A&s" 
+                    alt="Logo"
+                    className="w-40 h-auto drop-shadow-2xl rounded-2xl"
                   />
                 </div>
 
@@ -64,9 +65,6 @@ const LandingPage = ({ onSignIn, user }) => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
                   className="text-5xl md:text-6xl font-bold text-white text-center drop-shadow-2xl"
-                  style={{
-                    textShadow: '0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(59, 130, 246, 0.5)'
-                  }}
                 >
                   Toyota Financial
                 </motion.h1>
@@ -77,7 +75,7 @@ const LandingPage = ({ onSignIn, user }) => {
                   transition={{ duration: 0.8, delay: 0.8 }}
                   className="text-xl md:text-2xl text-blue-100 text-center drop-shadow-lg"
                 >
-                  Your Journey Starts Here
+
                 </motion.p>
               </div>
             </motion.div>
@@ -87,7 +85,7 @@ const LandingPage = ({ onSignIn, user }) => {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1 }}
-              className="flex flex-col sm:flex-row gap-4 mb-6"
+              className="flex flex-col sm:flex-row gap-6 mb-10"
             >
               {user ? (
                 <motion.div
@@ -139,10 +137,10 @@ const LandingPage = ({ onSignIn, user }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 1.2 }}
-              className="text-blue-200 text-center max-w-2xl text-base px-4"
+              className="text-blue-200 text-center max-w-2xl text-base px-10 pt-50"
             >
-              Discover personalized financing options tailored to your lifestyle. 
-              Drive your dream Toyota today.
+              <br />
+              Go on a space journey to find your next Toyota car!
             </motion.p>
           </motion.div>
         )}
