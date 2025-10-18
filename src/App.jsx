@@ -9,6 +9,7 @@ import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
 import ProfilePage from './components/ProfilePage';
+import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
   const [user, setUser] = useState(null);
