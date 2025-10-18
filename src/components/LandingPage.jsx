@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase/config';
 import AnimatedShaderBackground from './ui/animated-shader-background';
 import SpaceshipMascot from './ui/spaceship-mascot';
 
-const LandingPage = () => {
+const LandingPage = ({ onSignIn, user }) => {
   const [showContent, setShowContent] = useState(false);
 
   const handleAnimationComplete = () => {
@@ -87,24 +89,49 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 1 }}
               className="flex flex-col sm:flex-row gap-4 mb-6"
             >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-10 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white text-lg font-bold rounded-full shadow-2xl hover:shadow-red-500/50 transition-all duration-300"
-                style={{
-                  boxShadow: '0 0 30px rgba(239, 68, 68, 0.5)'
-                }}
-              >
-                Sign In
-              </motion.button>
+              {user ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 1 }}
+                  className="text-center"
+                >
+                  <p className="text-white text-lg mb-4">
+                    Welcome back, {user.displayName || user.email}!
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => signOut(auth)}
+                    className="px-10 py-3 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white text-lg font-bold rounded-full shadow-2xl hover:bg-white/20 transition-all duration-300"
+                  >
+                    Sign Out
+                  </motion.button>
+                </motion.div>
+              ) : (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onSignIn}
+                    className="px-10 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white text-lg font-bold rounded-full shadow-2xl hover:shadow-red-500/50 transition-all duration-300"
+                    style={{
+                      boxShadow: '0 0 30px rgba(239, 68, 68, 0.5)'
+                    }}
+                  >
+                    Sign In
+                  </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-10 py-3 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white text-lg font-bold rounded-full shadow-2xl hover:bg-white/20 transition-all duration-300"
-              >
-                Sign Up
-              </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onSignIn}
+                    className="px-10 py-3 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white text-lg font-bold rounded-full shadow-2xl hover:bg-white/20 transition-all duration-300"
+                  >
+                    Sign Up
+                  </motion.button>
+                </>
+              )}
             </motion.div>
 
             {/* Tagline */}
