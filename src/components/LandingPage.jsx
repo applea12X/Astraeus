@@ -4,7 +4,7 @@ import AnimatedShaderBackground from './ui/animated-shader-background';
 import SpaceshipMascot from './ui/spaceship-mascot';
 import GalaxyButton from './ui/GalaxyButton';
 
-const LandingPage = () => {
+const LandingPage = ({ onNavigate }) => {
   const [showContent, setShowContent] = useState(false);
 
   const handleAnimationComplete = () => {
@@ -88,6 +88,10 @@ const LandingPage = () => {
               <GalaxyButton className="min-w-52">Sign In</GalaxyButton>
 
               <GalaxyButton className="min-w-52">Sign Up</GalaxyButton>
+              
+              <GalaxyButton className="min-w-52" onClick={onNavigate}>
+                Start Journey
+              </GalaxyButton>
             </motion.div>
 
             {/* Tagline */}
