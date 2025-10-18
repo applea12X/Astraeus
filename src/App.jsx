@@ -1,22 +1,40 @@
 import './App.css';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from './firebase/config';
 import LandingPage from './components/LandingPage';
 import SignInForm from './components/ui/SignInForm';
 import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
+import ProfilePage from './components/ProfilePage';
 import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('landing');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      
+      // Fetch user profile from Firestore
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            setUserProfile(userDoc.data());
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      } else {
+        setUserProfile(null);
+      }
+      
       setLoading(false);
     });
 
@@ -60,13 +78,24 @@ function App() {
     return <NeptunePage />;
   }
 
+  if (currentPage === 'profile') {
+    return (
+      <ProfilePage 
+        user={user}
+        onBack={() => handleNavigate('landing')}
+      />
+    );
+  }
+
   // Landing page (default)
   return (
     <LandingPage 
       onSignIn={() => handleNavigate('sign-in')}
       onSignUp={() => handleNavigate('sign-up')}
       onNavigate={() => handleNavigate('solar-system')}
-      user={user} 
+      onViewProfile={() => handleNavigate('profile')}
+      user={user}
+      userProfile={userProfile}
     />
   );
 }

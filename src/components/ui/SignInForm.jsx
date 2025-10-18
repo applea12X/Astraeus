@@ -16,7 +16,7 @@ import AnimatedShaderBackground from "./animated-shader-background";
 
 const AstraeusLogo = (props) => (
   <div className="relative inline-flex items-center justify-center">
-    <Sparkles className="w-16 h-16 text-blue-400 animate-pulse" {...props} />
+    <Sparkles className="w-16 h-16 text-red-600 animate-pulse" {...props} />
   </div>
 );
 
