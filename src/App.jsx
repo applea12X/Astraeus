@@ -19,27 +19,56 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', user ? 'User signed in' : 'No user');
       setUser(user);
       
-      // Fetch user profile from Firestore
+      // Fetch user profile from Firestore with timeout
       if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            setUserProfile(userDoc.data());
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
+        // Navigate immediately, then fetch profile in background
+        if (currentPage === 'sign-in' || currentPage === 'sign-up') {
+          console.log('Navigating to landing page...');
+          setCurrentPage('landing');
         }
+        
+        // Fetch profile data asynchronously (non-blocking)
+        const fetchProfile = async () => {
+          try {
+            console.log('Fetching user profile from Firestore...');
+            const userDoc = await Promise.race([
+              getDoc(doc(db, 'users', user.uid)),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+              )
+            ]);
+            
+            if (userDoc.exists()) {
+              console.log('User profile found:', userDoc.data());
+              setUserProfile(userDoc.data());
+            } else {
+              console.log('No user profile found in Firestore');
+              setUserProfile(null);
+            }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            // Continue without profile data
+            setUserProfile(null);
+          }
+        };
+        
+        fetchProfile();
       } else {
         setUserProfile(null);
+        // If user logs out, go back to landing page
+        if (currentPage !== 'landing' && currentPage !== 'sign-in' && currentPage !== 'sign-up') {
+          setCurrentPage('landing');
+        }
       }
       
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [currentPage]);
 
   const handleNavigate = (page) => {
     setCurrentPage(page);

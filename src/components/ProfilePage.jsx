@@ -12,7 +12,8 @@ import { Label } from './ui/label';
 const ProfilePage = ({ user, onBack }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Changed to false - show page immediately
+  const [fetchingProfile, setFetchingProfile] = useState(true); // Track background fetch
   const [saving, setSaving] = useState(false);
   const [editedProfile, setEditedProfile] = useState({});
 
@@ -23,17 +24,53 @@ const ProfilePage = ({ user, onBack }) => {
   const fetchUserProfile = async () => {
     if (!user) return;
     
+    setFetchingProfile(true);
+    // Fetch profile data with timeout (non-blocking)
     try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      console.log('Fetching profile data from Firestore...');
+      const userDoc = await Promise.race([
+        getDoc(doc(db, 'users', user.uid)),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        )
+      ]);
+      
       if (userDoc.exists()) {
         const data = userDoc.data();
+        console.log('Profile data loaded:', data);
         setUserProfile(data);
         setEditedProfile(data);
+      } else {
+        console.log('No profile data found in Firestore');
+        // Use basic user data from auth
+        const basicProfile = {
+          firstName: user.displayName?.split(' ')[0] || '',
+          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+          email: user.email,
+          username: user.email?.split('@')[0] || '',
+          phone: '',
+          address: '',
+          role: 'user'
+        };
+        setUserProfile(basicProfile);
+        setEditedProfile(basicProfile);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+      // Fallback to basic user data
+      const basicProfile = {
+        firstName: user.displayName?.split(' ')[0] || '',
+        lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+        email: user.email,
+        username: user.email?.split('@')[0] || '',
+        phone: '',
+        address: '',
+        role: 'user'
+      };
+      setUserProfile(basicProfile);
+      setEditedProfile(basicProfile);
     } finally {
-      setLoading(false);
+      setFetchingProfile(false);
     }
   };
 
@@ -66,15 +103,16 @@ const ProfilePage = ({ user, onBack }) => {
     setEditedProfile(prev => ({ ...prev, [field]: value }));
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  const displayData = isEditing ? editedProfile : userProfile;
+  // Show page immediately, use whatever data we have
+  const displayData = isEditing ? editedProfile : (userProfile || {
+    firstName: user?.displayName?.split(' ')[0] || 'User',
+    lastName: user?.displayName?.split(' ').slice(1).join(' ') || '',
+    email: user?.email || '',
+    username: user?.email?.split('@')[0] || '',
+    phone: '',
+    address: '',
+    role: 'user'
+  });
   const joinDate = userProfile?.createdAt ? new Date(userProfile.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
 
   return (
@@ -93,16 +131,30 @@ const ProfilePage = ({ user, onBack }) => {
 
       {/* Content - Centered */}
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 py-16 space-y-10">
-        {/* Back Button */}
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={onBack}
-          className="flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-semibold">Back to Home</span>
-        </motion.button>
+        {/* Top Bar with Back Button and Loading Indicator */}
+        <div className="flex items-center justify-between">
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={onBack}
+            className="flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-semibold">Back to Home</span>
+          </motion.button>
+          
+          {/* Subtle loading indicator */}
+          {fetchingProfile && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 backdrop-blur-md border border-blue-400/30 text-blue-200 text-sm"
+            >
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+              <span>Loading profile data...</span>
+            </motion.div>
+          )}
+        </div>
 
         {/* Profile Cards Container */}
         <motion.div
