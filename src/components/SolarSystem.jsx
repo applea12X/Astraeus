@@ -4,7 +4,7 @@ import { ArrowLeft, Rocket, ChevronRight } from 'lucide-react';
 import sunImage from '../assets/sun.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 import AvatarGuide from './ui/AvatarGuide';
-import { getUserProgress, getGuideMessage, getNextSuggestion, startUserJourney, canAccessPlanet } from '../utils/userProgress';
+import { getUserProgress, getGuideMessage, getNextSuggestion, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
 import { auth } from '../firebase/config';
 
 const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
@@ -56,9 +56,9 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
               // Current planet not completed yet
               landed = progress.currentPlanet;
             } else {
-              // Find next uncompleted planet
-              const planets = ['neptune', 'uranus', 'saturn', 'mars', 'jupiter'];
-              landed = planets.find(planet => !progress[`${planet}Completed`]) || 'jupiter';
+              // Find next uncompleted planet using correct order
+              const planetIds = PLANET_ORDER.map(p => p.id);
+              landed = planetIds.find(planet => !progress[`${planet}Completed`]) || 'jupiter';
             }
           }
           setLandedPlanet(landed);
@@ -277,6 +277,50 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           requestAnimationFrame(() => computeAndStart());
         });
       }, 300);
+    } else if (flight.from === 'jupiter' && flight.to === 'mars') {
+      // Jupiter to Mars transfer animation
+      const computeAndStart = () => {
+        if (!jupiterRef.current || !marsRef.current) return;
+        
+        // Try to get the landed spaceship position first
+        const landedSpaceshipElement = document.getElementById('landed-spaceship-jupiter');
+        let spaceshipStartPosition;
+        
+        if (landedSpaceshipElement) {
+          const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
+          spaceshipStartPosition = {
+            x: spaceshipRect.left + spaceshipRect.width / 2,
+            y: spaceshipRect.top + spaceshipRect.height / 2
+          };
+        } else {
+          // Fallback to planet center if no landed spaceship found
+          const jRect = jupiterRef.current.getBoundingClientRect();
+          spaceshipStartPosition = { 
+            x: jRect.left + jRect.width / 2, 
+            y: jRect.top + jRect.height / 2 - 40 // Approximate offset for spaceship position
+          };
+        }
+        
+        const mRect = marsRef.current.getBoundingClientRect();
+        const marsCenter = { 
+          x: mRect.left + mRect.width / 2, 
+          y: mRect.top + mRect.height / 2 
+        };
+        
+        console.log('Jupiter to Mars - Spaceship start position:', spaceshipStartPosition, 'Mars center:', marsCenter);
+        
+        setAnimationInProgress(true);
+        setSpaceshipStartPos(spaceshipStartPosition);
+        setSpaceshipEndPos(marsCenter);
+        setShowSpaceship(true);
+      };
+      
+      // Give more time for layout to settle
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => computeAndStart());
+        });
+      }, 300);
     }
   }, [navPayload, hasPlayedTransfer]);
 
@@ -340,7 +384,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : planet.id === 5 ? () => handlePlanetClick('Jupiter') : planet.id === 4 ? () => handlePlanetClick('Mars') : undefined}
           className={`relative rounded-full shadow-2xl ${
             (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) ? 
-              userProgress && canAccessPlanet(userProgress, planet.name.toLowerCase()) || planet.id === 8 ?
+              userProgress && (canAccessPlanet(userProgress, planet.name.toLowerCase()) || userProgress?.[`${planet.name.toLowerCase()}Completed`]) || planet.id === 8 ?
                 'cursor-pointer hover:scale-110 transition-transform duration-300' :
                 'cursor-not-allowed opacity-50' :
               ''
@@ -427,8 +471,8 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
                 <div className={`w-[80px] text-center py-1.5 rounded-full text-sm font-semibold shadow-lg ${
                   (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) 
-                    ? userProgress && canAccessPlanet(userProgress, planet.name.toLowerCase()) || planet.id === 8
-                      ? (planet.id === 4 ? 'bg-red-500/90 text-white animate-pulse' : 'bg-blue-500/90 text-white animate-pulse')
+                    ? userProgress && (canAccessPlanet(userProgress, planet.name.toLowerCase()) || userProgress?.[`${planet.name.toLowerCase()}Completed`]) || planet.id === 8
+                      ? (planet.id === 4 ? 'bg-red-500/90 text-white animate-pulse' : planet.id === 5 ? 'bg-orange-500/90 text-white animate-pulse' : 'bg-blue-500/90 text-white animate-pulse')
                       : 'bg-gray-500/90 text-gray-300'
                     : 'bg-white/90 text-gray-900'
                 }`}>

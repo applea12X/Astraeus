@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, Loader2, Car, DollarSign, Calendar, Zap, ArrowRight, X, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Car, DollarSign, Calendar, Zap, ArrowRight, X, CheckCircle2, RefreshCw } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -11,6 +11,7 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [error, setError] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
   
   // State for Firebase-loaded data
   const [loadedPreferences, setLoadedPreferences] = useState(null);
@@ -18,6 +19,134 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
   const [loadedUserProfile, setLoadedUserProfile] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [savingSelection, setSavingSelection] = useState(false);
+  const [savedVehicleSelection, setSavedVehicleSelection] = useState(null);
+
+  // Local storage key for caching recommendations
+  const getStorageKey = (finalPreferences, finalFinancialInfo, finalUserProfile) => {
+    const user = auth.currentUser;
+    if (!user) return null;
+    
+    // Create a simplified hash of the input data to determine if recommendations need to be regenerated
+    const inputData = {
+      userId: user.uid,
+      preferences: finalPreferences ? {
+        budget: finalPreferences.budget,
+        vehicleType: finalPreferences.vehicleType,
+        familySize: finalPreferences.familySize,
+        primaryUse: finalPreferences.primaryUse,
+        fuelType: finalPreferences.fuelType
+      } : null,
+      financialInfo: finalFinancialInfo ? {
+        annualIncome: finalFinancialInfo.annualIncome,
+        creditScore: finalFinancialInfo.creditScore,
+        employmentStatus: finalFinancialInfo.employmentStatus,
+        financialGoal: finalFinancialInfo.financialGoal
+      } : null,
+      userProfile: finalUserProfile ? {
+        firstName: finalUserProfile.firstName,
+        lastName: finalUserProfile.lastName
+      } : null
+    };
+    
+    // Create a more reliable hash
+    try {
+      const jsonString = JSON.stringify(inputData, Object.keys(inputData).sort());
+      const hash = btoa(jsonString).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
+      return `saturn_recs_${user.uid}_${hash}`;
+    } catch (error) {
+      console.error('Error creating storage key:', error);
+      return `saturn_recs_${user.uid}_fallback`;
+    }
+  };
+
+  // Save recommendations to local storage
+  const saveRecommendationsToStorage = (storageKey, recommendations) => {
+    try {
+      console.log('💾 Saving recommendations to cache...');
+      console.log('🔑 Cache key:', storageKey);
+      console.log('📊 Recommendations count:', recommendations?.length || 0);
+      
+      const data = {
+        recommendations,
+        timestamp: Date.now(),
+        version: '1.0'
+      };
+      
+      const serializedData = JSON.stringify(data);
+      localStorage.setItem(storageKey, serializedData);
+      
+      console.log('✅ Recommendations saved to local storage successfully');
+      console.log('📏 Serialized data size:', serializedData.length, 'characters');
+      
+      // Verify the save worked
+      const verification = localStorage.getItem(storageKey);
+      if (verification) {
+        console.log('✅ Cache save verified - data exists in localStorage');
+      } else {
+        console.error('❌ Cache save verification failed - data not found');
+      }
+    } catch (error) {
+      console.error('❌ Error saving recommendations to storage:', error);
+      if (error.name === 'QuotaExceededError') {
+        console.error('💾 LocalStorage quota exceeded - clearing old cache entries');
+        // Clear old cache entries
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('saturn_recs_')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+      }
+    }
+  };
+
+  // Load recommendations from local storage
+  const loadRecommendationsFromStorage = (storageKey) => {
+    try {
+      console.log('🔍 Checking cache with key:', storageKey);
+      const stored = localStorage.getItem(storageKey);
+      
+      if (!stored) {
+        console.log('📭 No cached data found for key:', storageKey);
+        return null;
+      }
+      
+      console.log('📦 Found cached data, parsing...');
+      const data = JSON.parse(stored);
+      console.log('📊 Cached data structure:', {
+        hasRecommendations: !!data.recommendations,
+        recommendationsCount: data.recommendations?.length || 0,
+        timestamp: data.timestamp,
+        version: data.version
+      });
+      
+      // Check if data is less than 24 hours old
+      const age = Date.now() - data.timestamp;
+      const isRecent = age < 24 * 60 * 60 * 1000;
+      
+      console.log(`⏰ Cache age: ${Math.round(age / (60 * 1000))} minutes, isRecent: ${isRecent}`);
+      
+      if (isRecent && data.recommendations && Array.isArray(data.recommendations) && data.recommendations.length > 0) {
+        console.log('✅ Using cached recommendations:', data.recommendations.length, 'vehicles');
+        return data.recommendations;
+      } else {
+        console.log('🗑️ Removing expired or invalid cache');
+        localStorage.removeItem(storageKey);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error loading recommendations from storage:', error);
+      // Clean up corrupted cache
+      try {
+        localStorage.removeItem(storageKey);
+      } catch (cleanupError) {
+        console.error('Failed to clean up corrupted cache:', cleanupError);
+      }
+      return null;
+    }
+  };
 
   // Save vehicle selection and mark Saturn as completed
   const saveVehicleSelection = async (selectedVehicle) => {
@@ -70,6 +199,12 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
         setLoadedUserProfile(userData);
         setLoadedPreferences(userData.vehiclePreferences);
         console.log('✅ Loaded preferences from Firebase:', userData.vehiclePreferences);
+        
+        // Load saved vehicle selection if exists
+        if (userData.selectedVehicle) {
+          setSavedVehicleSelection(userData.selectedVehicle);
+          console.log('✅ Loaded saved vehicle selection from Firebase:', userData.selectedVehicle);
+        }
       }
 
       // Load financial info from financial_profiles collection
@@ -112,8 +247,28 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
     console.log('  - finalUserProfile:', finalUserProfile);
     
     if (finalPreferences) {
-      console.log('✅ Preferences found, starting AI recommendations...');
-      getAIRecommendations(finalPreferences, finalFinancialInfo, finalUserProfile);
+      // Try to load from cache first
+      console.log('🔍 Attempting to load cached recommendations...');
+      const storageKey = getStorageKey(finalPreferences, finalFinancialInfo, finalUserProfile);
+      
+      if (storageKey) {
+        console.log('🔑 Generated cache key:', storageKey);
+        const cachedRecommendations = loadRecommendationsFromStorage(storageKey);
+        
+        if (cachedRecommendations && cachedRecommendations.length > 0) {
+          console.log('🎯 Cache hit! Using cached recommendations, skipping Gemini API call');
+          setVehicles(cachedRecommendations);
+          setLoading(false);
+          return;
+        } else {
+          console.log('❌ Cache miss or empty cache, will call Gemini API');
+        }
+      } else {
+        console.log('❌ Could not generate cache key, will call Gemini API');
+      }
+      
+      console.log('🚀 No valid cache found, starting fresh AI recommendations...');
+      getAIRecommendations(finalPreferences, finalFinancialInfo, finalUserProfile, false);
     } else {
       console.log('❌ No preferences found! User needs to complete Uranus first.');
       setError('Please complete your vehicle preferences on Uranus first.');
@@ -121,14 +276,19 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
     }
   }, [dataLoading, preferences, loadedPreferences, financialInfo, loadedFinancialInfo, userProfile, loadedUserProfile]);
 
-  const getAIRecommendations = async (finalPreferences, finalFinancialInfo, finalUserProfile) => {
+  const getAIRecommendations = async (finalPreferences, finalFinancialInfo, finalUserProfile, isRegeneration = false) => {
     console.log('🚀 Starting Gemini AI recommendations...');
     console.log('📊 Input Data:');
     console.log('  - Preferences:', finalPreferences);
     console.log('  - Financial Info:', finalFinancialInfo);
     console.log('  - User Profile:', finalUserProfile);
+    console.log('  - Is Regeneration:', isRegeneration);
     
-    setLoading(true);
+    if (isRegeneration) {
+      setRegenerating(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     
     try {
@@ -293,6 +453,12 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
       
       console.log('✅ Successfully parsed vehicles:', vehicleData.length, 'vehicles');
       setVehicles(vehicleData);
+      
+      // Save to local storage
+      const storageKey = getStorageKey(finalPreferences, finalFinancialInfo, finalUserProfile);
+      if (storageKey) {
+        saveRecommendationsToStorage(storageKey, vehicleData);
+      }
     } catch (error) {
       console.error('❌ Gemini API Error Details:');
       console.error('  - Error type:', error.constructor.name);
@@ -341,6 +507,25 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
       setError(errorMessage);
     } finally {
       setLoading(false);
+      setRegenerating(false);
+    }
+  };
+
+  // Function to handle regeneration
+  const handleRegenerate = () => {
+    const finalPreferences = preferences || loadedPreferences;
+    const finalFinancialInfo = financialInfo || loadedFinancialInfo;
+    const finalUserProfile = userProfile || loadedUserProfile;
+    
+    if (finalPreferences) {
+      // Clear any cached data first
+      const storageKey = getStorageKey(finalPreferences, finalFinancialInfo, finalUserProfile);
+      if (storageKey) {
+        localStorage.removeItem(storageKey);
+        console.log('🗑️ Cleared cached recommendations');
+      }
+      
+      getAIRecommendations(finalPreferences, finalFinancialInfo, finalUserProfile, true);
     }
   };
 
@@ -430,7 +615,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
             <p className="text-red-200 text-lg mb-8">{error}</p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={getAIRecommendations}
+                onClick={handleRegenerate}
                 className="px-8 py-4 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-all"
               >
                 Try Again
@@ -527,6 +712,14 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               {/* Vehicle Name */}
               <h1 className="text-5xl font-bold text-white mb-2">{selectedVehicle.name}</h1>
               <p className="text-2xl text-amber-200 mb-6">{selectedVehicle.year} {selectedVehicle.model}</p>
+              
+              {/* Previously Selected Indicator */}
+              {savedVehicleSelection && selectedVehicle.name === savedVehicleSelection.name && (
+                <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-400/50 text-green-300 px-4 py-2 rounded-xl mb-6">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="font-semibold">You previously selected this vehicle</span>
+                </div>
+              )}
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -743,9 +936,26 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
           <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-4">
             Your Perfect Matches
           </h1>
-          <p className="text-xl text-amber-200">
+          <p className="text-xl text-amber-200 mb-6">
             {vehicles.length} personalized Toyota recommendations
           </p>
+          
+          {/* Regenerate Button */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            onClick={handleRegenerate}
+            disabled={regenerating}
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl border transition-all ${
+              regenerating 
+                ? 'bg-gray-600 border-gray-500 text-gray-300 cursor-not-allowed' 
+                : 'bg-white/10 hover:bg-white/20 border-white/30 text-white hover:text-amber-300'
+            }`}
+          >
+            <RefreshCw className={`w-5 h-5 ${regenerating ? 'animate-spin' : ''}`} />
+            {regenerating ? 'Regenerating...' : 'Get New Recommendations'}
+          </motion.button>
         </motion.div>
 
         {/* Vehicle Grid */}
@@ -758,8 +968,20 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => setSelectedVehicle(vehicle)}
-                className="bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/20 shadow-lg hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group"
+                className={`backdrop-blur-xl rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group relative ${
+                  savedVehicleSelection && vehicle.name === savedVehicleSelection.name
+                    ? 'bg-green-500/20 border-2 border-green-400/60'
+                    : 'bg-white/10 border border-white/20'
+                }`}
               >
+                {/* Previously Selected Badge */}
+                {savedVehicleSelection && vehicle.name === savedVehicleSelection.name && (
+                  <div className="absolute top-3 right-3 z-10 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Previously Selected
+                  </div>
+                )}
+                
                 {/* Vehicle Image */}
                 <div className="w-full h-48 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 border-b border-white/10 overflow-hidden">
                   {vehicle.imageUrl ? (

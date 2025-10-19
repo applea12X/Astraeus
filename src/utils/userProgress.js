@@ -6,8 +6,8 @@ export const PLANET_ORDER = [
   { id: 'neptune', name: 'Neptune', route: 'neptune' },
   { id: 'uranus', name: 'Uranus', route: 'uranus' },
   { id: 'saturn', name: 'Saturn', route: 'saturn' },
-  { id: 'mars', name: 'Mars', route: 'mars' },
-  { id: 'jupiter', name: 'Jupiter', route: 'jupiter' }
+  { id: 'jupiter', name: 'Jupiter', route: 'jupiter' },
+  { id: 'mars', name: 'Mars', route: 'mars' }
 ];
 
 // Progress stages and their requirements
@@ -33,19 +33,19 @@ export const PROGRESS_STAGES = {
     requires: ['neptune', 'uranus'],
     completionField: 'saturnCompleted'
   },
-  mars: {
-    name: 'Mars',
-    title: 'Payment Simulations',
-    description: 'Explore financing options',
-    requires: ['neptune', 'uranus', 'saturn'],
-    completionField: 'marsCompleted'
-  },
   jupiter: {
     name: 'Jupiter',
     title: 'Final Selection',
     description: 'Choose your perfect vehicle',
-    requires: ['neptune', 'uranus', 'saturn', 'mars'],
+    requires: ['neptune', 'uranus', 'saturn'],
     completionField: 'jupiterCompleted'
+  },
+  mars: {
+    name: 'Mars',
+    title: 'Payment Simulations',
+    description: 'Explore financing options',
+    requires: ['neptune', 'uranus', 'saturn', 'jupiter'],
+    completionField: 'marsCompleted'
   }
 };
 
