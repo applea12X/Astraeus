@@ -19,6 +19,7 @@ import SaturnPage from './components/SaturnPage';
 import SaturnResultsPage from './components/SaturnResultsPage';
 import JupiterPage from './components/JupiterPage';
 import JupiterPaymentPage from './components/JupiterPaymentPage';
+import JupiterPurchasePlan from './components/JupiterPurchasePlan';
 import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
@@ -206,6 +207,15 @@ function App() {
             onNavigate={handleNavigate}
             financialInfo={financialInfo}
             selectedVehicle={selectedVehicle}
+          />
+        );
+      case 'jupiter-plan':
+        return (
+          <JupiterPurchasePlan 
+            onNavigate={handleNavigate}
+            selectedVehicle={selectedVehicle}
+            financialInfo={financialInfo}
+            paymentMethod="finance"
           />
         );
       default:
