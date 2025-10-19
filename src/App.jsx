@@ -156,12 +156,13 @@ function App() {
           />
         );
       case 'uranus':
-        return <UranusPage onNavigate={handleNavigate} />;
+        return <UranusPage onNavigate={handleNavigate} financialInfo={financialInfo} />;
       case 'uranus-form':
         return (
           <UranusFormPage 
             onNavigate={handleNavigate} 
             onSubmitPreferences={handleSubmitPreferences}
+            financialInfo={financialInfo}
           />
         );
       case 'saturn':

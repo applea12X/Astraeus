@@ -256,9 +256,14 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
           onSubmitFinancialInfo(formData);
         }
         
-        // Navigate back to solar system to continue journey
+        // Navigate back to solar system to continue journey with transfer animation
         if (onNavigate) {
-          onNavigate('solar-system');
+          onNavigate('solar-system', { 
+            flight: { 
+              from: 'neptune', 
+              to: 'uranus' 
+            } 
+          });
         }
       } else {
         alert('Failed to save financial information. Please try again.');
