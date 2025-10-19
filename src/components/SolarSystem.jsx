@@ -15,6 +15,7 @@ import NeptuneSpaceship from './ui/NeptuneSpaceship';
 import { getUserProgress, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
 import { auth } from '../firebase/config';
 import AIShoppingAssistant from './AIShoppingAssistant';
+import DealerViewModal from './DealerViewModal';
 
 const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const [showSpaceship, setShowSpaceship] = useState(false);
@@ -26,6 +27,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const [landedPlanet, setLandedPlanet] = useState(null);
   const [animationInProgress, setAnimationInProgress] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showDealerView, setShowDealerView] = useState(false);
   const scrollContainerRef = useRef(null);
   const neptuneRef = useRef(null);
   const uranusRef = useRef(null);
@@ -529,15 +531,23 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
 
       {/* Main Solar System Container */}
       <div className="relative min-w-max h-full flex items-center justify-end pr-0">
-        {/* Sun on the right - large and mostly on-screen (no animation) */}
-        <div className="absolute right-[-200px] top-1/2 transform -translate-y-1/2 z-20">
-          <img 
-            src={sunImage} 
-            alt="Sun" 
+        {/* Sun on the right - large and mostly on-screen - Clickable for Dealer View */}
+        <div
+          className="absolute right-[-200px] top-1/2 transform -translate-y-1/2 z-20 cursor-pointer hover:scale-105 transition-transform duration-300"
+          onClick={() => setShowDealerView(true)}
+        >
+          <img
+            src={sunImage}
+            alt="Sun - Click for Dealer View"
             className="w-[650px] h-[650px] object-contain drop-shadow-[0_0_100px_rgba(255,200,50,0.9)]"
           />
           {/* Sun glow effect */}
           <div className="absolute inset-0 rounded-full bg-yellow-400/30 blur-[100px] scale-150 -z-10" />
+
+          {/* Dealer View indicator badge */}
+          <div className="absolute top-20 right-20 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
+            <span className="text-sm font-semibold text-orange-600">Dealer View</span>
+          </div>
         </div>
 
        {/* Planets */} 
@@ -705,6 +715,15 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
         userProfile={userProfile}
         currentPageName="solar-system"
       />
+
+      {/* Dealer View Modal */}
+      {showDealerView && (
+        <DealerViewModal
+          userId={auth.currentUser?.uid}
+          userProfile={userProfile}
+          onClose={() => setShowDealerView(false)}
+        />
+      )}
     </div>
   );
 };
