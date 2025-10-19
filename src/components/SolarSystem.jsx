@@ -13,6 +13,7 @@ import neptuneImage from '../assets/neptune.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 import { getUserProgress, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
 import { auth } from '../firebase/config';
+import AIShoppingAssistant from './AIShoppingAssistant';
 
 const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const [showSpaceship, setShowSpaceship] = useState(false);
@@ -666,6 +667,14 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           onAnimationComplete={spaceshipEndPos ? handleTransferComplete : handleAnimationComplete}
         />
       )}
+      
+      {/* AI Shopping Assistant */}
+      <AIShoppingAssistant 
+        selectedVehicle={null} 
+        financialInfo={{}} 
+        userProfile={userProfile} 
+        currentPageName="solar-system" 
+      />
     </div>
   );
 };
