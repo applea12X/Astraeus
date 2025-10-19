@@ -16,7 +16,6 @@ import {
   Target,
   Phone
 } from 'lucide-react';
-import AIShoppingAssistant from './AIShoppingAssistant';
 
 const JupiterPurchasePlan = ({ onNavigate, selectedVehicle, financialInfo, paymentMethod = 'finance' }) => {
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -646,14 +645,6 @@ const JupiterPurchasePlan = ({ onNavigate, selectedVehicle, financialInfo, payme
       {/* Nebula Glow Effects */}
       <div className="fixed top-1/4 right-1/4 w-[600px] h-[600px] bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full blur-3xl opacity-10 pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full blur-3xl opacity-10 pointer-events-none" />
-      
-      {/* AI Shopping Assistant */}
-      <AIShoppingAssistant 
-        selectedVehicle={selectedVehicle}
-        financialInfo={financialInfo}
-        userProfile={{}}
-        currentPageName="jupiter-plan"
-      />
     </motion.div>
   );
 };

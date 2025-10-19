@@ -5,7 +5,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { updateUserProgress } from '../utils/userProgress';
-import AIShoppingAssistant from './AIShoppingAssistant';
 
 const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => {
   const [loading, setLoading] = useState(true);
@@ -1056,27 +1055,6 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
       {/* Ambient glow */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none" />
-      
-      {/* AI Shopping Assistant - Always show after loading */}
-      {!loading && (
-        <AIShoppingAssistant 
-          selectedVehicle={selectedVehicle || vehicles[0]}
-          financialInfo={financialInfo}
-          userProfile={userProfile}
-          currentPageName="saturn-results"
-          pageContext={{
-            allRecommendations: vehicles.map(v => ({
-              name: v.name,
-              type: v.type,
-              price: v.priceNew,
-              matchScore: v.matchScore,
-              fuelEconomy: v.fuelEconomy
-            })),
-            totalRecommendations: vehicles.length,
-            hasSelection: !!selectedVehicle
-          }}
-        />
-      )}
     </motion.div>
   );
 };

@@ -4,7 +4,6 @@ import { ArrowLeft, Upload, FileText, CreditCard, Check, X as XIcon, Loader2 } f
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { auth, db } from '../firebase/config';
 import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
-import AIShoppingAssistant from './AIShoppingAssistant';
 
 const NeptunePage = ({ onNavigate }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -942,9 +941,6 @@ Respond in JSON format:
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* AI Shopping Assistant */}
-      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} currentPageName="neptune" />
     </div>
   );
 };
