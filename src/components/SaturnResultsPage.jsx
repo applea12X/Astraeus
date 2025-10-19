@@ -1063,6 +1063,17 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
           selectedVehicle={selectedVehicle || vehicles[0]}
           financialInfo={financialInfo}
           userProfile={userProfile}
+          pageContext={{
+            allRecommendations: vehicles.map(v => ({
+              name: v.name,
+              type: v.type,
+              price: v.priceNew,
+              matchScore: v.matchScore,
+              fuelEconomy: v.fuelEconomy
+            })),
+            totalRecommendations: vehicles.length,
+            hasSelection: !!selectedVehicle
+          }}
         />
       )}
     </motion.div>

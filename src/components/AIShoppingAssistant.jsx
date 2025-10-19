@@ -15,7 +15,43 @@ import {
 } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile }) => {
+/**
+ * AI Shopping Assistant with RAG-like Context Awareness
+ * 
+ * This component provides an intelligent chatbot that has access to:
+ * - Current page context (detected automatically from URL)
+ * - User's financial profile (income, credit score, employment)
+ * - User's vehicle preferences (budget, type, family size, etc.)
+ * - Selected vehicle details
+ * - Additional page-specific data (passed via pageContext prop)
+ * 
+ * @param {Object} selectedVehicle - Currently selected/viewed vehicle
+ * @param {Object} financialInfo - User's financial profile from Neptune
+ * @param {Object} userProfile - Complete user profile from Firebase
+ * @param {Object} pageContext - Additional page-specific context (optional)
+ * 
+ * @example
+ * // Basic usage:
+ * <AIShoppingAssistant 
+ *   selectedVehicle={selectedVehicle}
+ *   financialInfo={financialInfo}
+ *   userProfile={userProfile}
+ * />
+ * 
+ * @example
+ * // With additional page context:
+ * <AIShoppingAssistant 
+ *   selectedVehicle={selectedVehicle}
+ *   financialInfo={financialInfo}
+ *   userProfile={userProfile}
+ *   pageContext={{
+ *     allRecommendations: vehicles,
+ *     totalRecommendations: vehicles.length,
+ *     customData: { ... }
+ *   }}
+ * />
+ */
+const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, pageContext = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -35,12 +71,137 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile }) =>
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Initialize with welcome message
+  // Detect current page and extract context
+  const getCurrentPageContext = () => {
+    const pathname = window.location.pathname;
+    const url = window.location.href;
+    
+    let pageName = 'Unknown';
+    let pageDescription = '';
+    let relevantData = {};
+    
+    // Extract page-specific context
+    if (url.includes('saturn') || pathname.includes('saturn')) {
+      pageName = 'Saturn - Vehicle Recommendations';
+      pageDescription = 'This page shows AI-recommended vehicles based on your financial profile and preferences.';
+      if (selectedVehicle) {
+        relevantData.currentVehicle = {
+          name: selectedVehicle.name,
+          type: selectedVehicle.type,
+          year: selectedVehicle.year,
+          price: selectedVehicle.priceNew,
+          fuelEconomy: selectedVehicle.fuelEconomy,
+          matchScore: selectedVehicle.matchScore
+        };
+      }
+      
+      // Extract visible page headings for additional context
+      try {
+        const mainHeading = document.querySelector('h1, h2')?.textContent;
+        if (mainHeading) relevantData.pageHeading = mainHeading;
+      } catch (e) {
+        // Silently fail if DOM access fails
+      }
+    } else if (url.includes('jupiter') || pathname.includes('jupiter')) {
+      pageName = 'Jupiter - Purchase Planning';
+      pageDescription = 'This page helps users create a detailed purchase plan including financing, timeline, and documents needed.';
+      relevantData.stage = 'purchase_planning';
+    } else if (url.includes('uranus') || pathname.includes('uranus')) {
+      pageName = 'Uranus - Vehicle Preferences';
+      pageDescription = 'This page collects user preferences: budget, vehicle type, family size, primary use, and fuel type.';
+      relevantData.stage = 'preference_collection';
+    } else if (url.includes('neptune') || pathname.includes('neptune')) {
+      pageName = 'Neptune - Financial Information';
+      pageDescription = 'This page collects user financial details: employment, income, credit score, and financial goals.';
+      relevantData.stage = 'financial_collection';
+    } else if (url.includes('mars') || pathname.includes('mars')) {
+      pageName = 'Mars - Payment Simulations';
+      pageDescription = 'This page provides detailed payment scenarios and financial simulations.';
+      relevantData.stage = 'payment_simulation';
+    } else {
+      pageName = 'Landing Page';
+      pageDescription = 'The main page where users start their car-buying journey through the solar system.';
+    }
+    
+    // Merge with any additional pageContext passed from parent
+    return {
+      pageName,
+      pageDescription,
+      relevantData: {
+        ...relevantData,
+        ...(pageContext?.relevantData || {})
+      },
+      ...pageContext
+    };
+  };
+
+  // Build comprehensive user context for AI
+  const buildUserContext = () => {
+    const pageCtx = getCurrentPageContext();
+    
+    return {
+      // Financial Information
+      financial: financialInfo ? {
+        employmentStatus: financialInfo.employmentStatus,
+        occupation: financialInfo.occupation,
+        annualIncome: financialInfo.annualIncome,
+        creditScore: financialInfo.creditScore,
+        financialGoal: financialInfo.financialGoal,
+        hasData: true
+      } : { hasData: false },
+      
+      // Vehicle Preferences
+      preferences: userProfile?.vehiclePreferences || {},
+      
+      // Current Vehicle Selection
+      selectedVehicle: selectedVehicle ? {
+        name: selectedVehicle.name,
+        type: selectedVehicle.type,
+        price: selectedVehicle.priceNew,
+        year: selectedVehicle.year,
+        matchScore: selectedVehicle.matchScore
+      } : null,
+      
+      // Page Context
+      currentPage: pageCtx,
+      
+      // User Profile
+      userInfo: {
+        email: userProfile?.email,
+        zipCode: userProfile?.zipCode || '78701',
+        journeyStarted: userProfile?.journeyStarted || false
+      }
+    };
+  };
+
+  // Initialize with context-aware welcome message
   useEffect(() => {
     if (isOpen && messages.length === 0) {
+      const userContext = buildUserContext();
+      const pageCtx = userContext.currentPage;
+      
+      // Build personalized welcome message
+      let welcomeContent = `👋 Hi! I'm your AI Shopping Assistant.\n\n`;
+      
+      // Add page-specific context
+      welcomeContent += `📍 You're on: **${pageCtx.pageName}**\n${pageCtx.pageDescription}\n\n`;
+      
+      // Add personalized context if available
+      if (userContext.selectedVehicle) {
+        welcomeContent += `🚗 You're looking at: **${userContext.selectedVehicle.name}**\n`;
+        welcomeContent += `💰 Price: ${userContext.selectedVehicle.price}\n\n`;
+      }
+      
+      if (userContext.financial.hasData && userContext.financial.annualIncome) {
+        const monthlyBudget = Math.round(parseInt(userContext.financial.annualIncome) * 0.15 / 12);
+        welcomeContent += `💵 Based on your income, your recommended monthly budget is ~$${monthlyBudget}\n\n`;
+      }
+      
+      welcomeContent += `I can help you with:\n• Finding cars on Toyota.com\n• Getting insurance quotes\n• Finding nearby dealers\n• Financial advice specific to your situation\n• Navigating to helpful resources\n\nWhat would you like help with?`;
+      
       const welcomeMessage = {
         role: 'assistant',
-        content: `👋 Hi! I'm your AI Shopping Assistant. I can help you navigate to the best resources for buying your ${selectedVehicle?.name || 'Toyota'}.\n\nI can help you with:\n• Finding your car on Toyota.com\n• Getting insurance quotes\n• Finding nearby dealers\n• Calculating financing options\n• Comparing prices across sites\n\nWhat would you like to do first?`,
+        content: welcomeContent,
         timestamp: new Date()
       };
       setMessages([welcomeMessage]);
@@ -166,32 +327,85 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile }) =>
       }
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
-      // Build context-aware prompt
-      const contextPrompt = `You are an AI shopping assistant helping a user buy a car. 
+      // Build comprehensive context-aware prompt using RAG approach
+      const userContext = buildUserContext();
+      
+      // Log context for debugging (helps developers see what AI knows)
+      console.log('🧠 AI Context Sent:', {
+        page: userContext.currentPage.pageName,
+        hasFinancialData: userContext.financial.hasData,
+        hasVehicle: !!userContext.selectedVehicle,
+        hasPreferences: Object.keys(userContext.preferences).length > 0
+      });
+      
+      const contextPrompt = `You are an AI shopping assistant helping a user through their car-buying journey. You have access to their complete profile and current page context.
 
-User's Profile:
-- Selected Vehicle: ${selectedVehicle?.name || 'Toyota vehicle'}
-- Budget: ${financialInfo?.annualIncome ? `$${financialInfo.annualIncome}/year income` : 'Not specified'}
-- Credit Score: ${financialInfo?.creditScore || 'Not specified'}
-- Vehicle Preferences: ${userProfile?.vehiclePreferences || 'Not specified'}
+=== CURRENT PAGE CONTEXT ===
+Page: ${userContext.currentPage.pageName}
+Description: ${userContext.currentPage.pageDescription}
+${userContext.currentPage.relevantData ? `Additional Context: ${JSON.stringify(userContext.currentPage.relevantData)}` : ''}
 
-Your job is to:
-1. Guide them to relevant external websites (Toyota.com, insurance sites, dealer sites, financing calculators)
-2. Provide SPECIFIC, ACTIONABLE advice
-3. Generate exact URLs when possible
-4. Be concise but helpful (2-3 sentences max)
+=== USER'S FINANCIAL PROFILE ===
+${userContext.financial.hasData ? `
+- Employment: ${userContext.financial.employmentStatus}
+- Occupation: ${userContext.financial.occupation || 'Not specified'}
+- Annual Income: $${userContext.financial.annualIncome}
+- Credit Score: ${userContext.financial.creditScore}
+- Financial Goal: ${userContext.financial.financialGoal}
+- Recommended Monthly Budget: $${Math.round(parseInt(userContext.financial.annualIncome || 0) * 0.15 / 12)}
+` : '- Financial information not yet provided'}
 
-Available resources you can direct them to:
-- Toyota.com for vehicle search
-- Insurance quote sites (TheZebra, Progressive, Geico)
-- Toyota Financial Services calculators
-- Local dealer lookups
+=== VEHICLE PREFERENCES ===
+${Object.keys(userContext.preferences).length > 0 ? `
+- Budget Range: ${userContext.preferences.budget}
+- Vehicle Type: ${userContext.preferences.vehicleType}
+- Family Size: ${userContext.preferences.familySize}
+- Primary Use: ${userContext.preferences.primaryUse}
+- Fuel Type: ${userContext.preferences.fuelType}
+` : '- Preferences not yet collected'}
+
+=== SELECTED VEHICLE ===
+${userContext.selectedVehicle ? `
+- Model: ${userContext.selectedVehicle.name}
+- Type: ${userContext.selectedVehicle.type}
+- Year: ${userContext.selectedVehicle.year}
+- Price: ${userContext.selectedVehicle.price}
+- Match Score: ${userContext.selectedVehicle.matchScore}%
+` : '- No vehicle selected yet'}
+
+${userContext.currentPage.allRecommendations ? `
+=== ALL RECOMMENDED VEHICLES (${userContext.currentPage.totalRecommendations} total) ===
+${userContext.currentPage.allRecommendations.slice(0, 5).map((v, i) => 
+  `${i + 1}. ${v.name} - ${v.price} (Match: ${v.matchScore}%, ${v.fuelEconomy})`
+).join('\n')}
+${userContext.currentPage.totalRecommendations > 5 ? '... and more' : ''}
+` : ''}
+
+=== USER LOCATION ===
+- ZIP Code: ${userContext.userInfo.zipCode}
+
+=== YOUR ROLE ===
+You are a knowledgeable car-buying advisor called "Cam" with access to the user's complete profile. Your job is to:
+
+1. **Provide Page-Specific Help**: Give advice relevant to where they are in their journey
+2. **Use Their Data**: Reference their income, credit score, preferences, and selected vehicle in your responses
+3. **Guide to External Resources**: Direct them to Toyota.com, insurance sites, dealer sites, financing tools
+4. **Be Specific & Actionable**: Give concrete next steps with actual URLs when possible
+5. **Be Concise**: 2-4 sentences max unless they ask for detailed explanation
+6. **Show You Know Them**: Reference their specific situation to build trust
+
+Available External Resources:
+- Toyota.com inventory search (pre-filled with their vehicle/ZIP)
+- Insurance quotes: TheZebra, Progressive, Geico
+- Toyota Financial Services calculator
+- Local dealer finder
 - KBB/Edmunds for trade-in values
-- Credit Karma for credit score improvement
+- Credit Karma for credit building
+- NerdWallet for financial advice
 
-User question: "${userMessage}"
+User's Question: "${userMessage}"
 
-Respond conversationally and include specific next steps. If recommending a website, explain WHY they should visit it.`;
+Respond conversationally, reference their specific situation, and provide actionable next steps. If recommending a website, explain WHY based on their profile.`;
 
       // Stream the response
       const result = await model.generateContentStream(contextPrompt);
@@ -373,13 +587,13 @@ Respond conversationally and include specific next steps. If recommending a webs
             style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-indigo-600/20 to-purple-600/20">
+            <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-red-900/20 to-red-600/20">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-red-900 to-red-600 rounded-full flex items-center justify-center">
                   <MessageSquare className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold">AI Shopping Assistant</h3>
+                  <h3 className="text-white font-semibold">Cam</h3>
                   <p className="text-xs text-gray-400">Powered by Gemini AI</p>
                 </div>
               </div>
@@ -403,14 +617,14 @@ Respond conversationally and include specific next steps. If recommending a webs
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                       message.role === 'user'
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                        ? 'bg-gradient-to-r from-red-900 to-red-600 text-white'
                         : 'bg-white/5 text-gray-200 border border-white/10'
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap">
                       {message.content}
                       {message.isStreaming && (
-                        <span className="inline-block w-1.5 h-4 ml-1 bg-indigo-400 animate-pulse" />
+                        <span className="inline-block w-1.5 h-4 ml-1 bg-red-400 animate-pulse" />
                       )}
                     </p>
                   </div>
@@ -420,7 +634,7 @@ Respond conversationally and include specific next steps. If recommending a webs
               {isLoading && messages.every(m => !m.isStreaming) && (
                 <div className="flex justify-start">
                   <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                    <Loader2 className="w-4 h-4 text-red-400 animate-spin" />
                     <span className="text-sm text-gray-400">Thinking...</span>
                   </div>
                 </div>
@@ -487,13 +701,13 @@ Respond conversationally and include specific next steps. If recommending a webs
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="Ask me anything..."
-                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition-colors"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={isLoading || !inputMessage.trim()}
-                  className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl flex items-center justify-center text-white transition-all"
+                  className="w-12 h-12 bg-gradient-to-r from-red-900 to-red-600 hover:from-red-500 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl flex items-center justify-center text-white transition-all"
                 >
                   <Send className="w-5 h-5" />
                 </button>
