@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase/config';
+import { motion, AnimatePresence } from 'framer-motion';
 import LandingPage from './components/LandingPage';
 import SignInForm from './components/ui/SignInForm';
 import SignUpForm from './components/ui/SignUpForm';
@@ -22,6 +23,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState('landing');
   const [vehiclePreferences, setVehiclePreferences] = useState(null);
   const [financialInfo, setFinancialInfo] = useState(null);
+  const [navPayload, setNavPayload] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -76,7 +78,8 @@ function App() {
     return () => unsubscribe();
   }, [currentPage]);
 
-  const handleNavigate = (page) => {
+  const handleNavigate = (page, payload) => {
+    setNavPayload(payload ?? null);
     setCurrentPage(page);
   };
 
@@ -88,6 +91,28 @@ function App() {
     setFinancialInfo(info);
   };
 
+  // Page transition variants
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      x: 300
+    },
+    animate: {
+      opacity: 1,
+      x: 0
+    },
+    exit: {
+      opacity: 1,
+      x: -300
+    }
+  };
+
+  const pageTransition = {
+    type: "tween",
+    ease: [0.4, 0, 0.2, 1],
+    duration: 0.5
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -96,87 +121,84 @@ function App() {
     );
   }
 
-  // Navigation between different pages
-  if (currentPage === 'sign-in') {
-    return (
-      <SignInForm 
-        onSignUp={() => handleNavigate('sign-up')}
-      />
-    );
-  }
+  // Render the current page with transitions
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'sign-in':
+        return (
+          <SignInForm 
+            onSignUp={() => handleNavigate('sign-up')}
+          />
+        );
+      case 'sign-up':
+        return (
+          <SignUpForm 
+            onSignIn={() => handleNavigate('sign-in')}
+          />
+        );
+      case 'solar-system':
+        return <SolarSystem onNavigate={handleNavigate} navPayload={navPayload} />;
+      case 'neptune':
+        return <NeptunePage onNavigate={handleNavigate} />;
+      case 'financial-info':
+        return <FinancialInfoPage onNavigate={handleNavigate} onSubmitFinancialInfo={handleSubmitFinancialInfo} />;
+      case 'profile':
+        return (
+          <ProfilePage 
+            user={user}
+            onBack={() => handleNavigate('landing')}
+          />
+        );
+      case 'uranus':
+        return <UranusPage onNavigate={handleNavigate} />;
+      case 'uranus-form':
+        return (
+          <UranusFormPage 
+            onNavigate={handleNavigate} 
+            onSubmitPreferences={handleSubmitPreferences}
+          />
+        );
+      case 'saturn':
+        return <SaturnPage onNavigate={handleNavigate} />;
+      case 'saturn-results':
+        return (
+          <SaturnResultsPage 
+            onNavigate={handleNavigate}
+            preferences={vehiclePreferences}
+            financialInfo={financialInfo}
+            userProfile={userProfile}
+          />
+        );
+      default:
+        return (
+          <LandingPage 
+            onSignIn={() => handleNavigate('sign-in')}
+            onSignUp={() => handleNavigate('sign-up')}
+            onNavigate={() => handleNavigate('solar-system')}
+            onViewProfile={() => handleNavigate('profile')}
+            user={user}
+            userProfile={userProfile}
+          />
+        );
+    }
+  };
 
-  if (currentPage === 'sign-up') {
-    return (
-      <SignUpForm 
-        onSignIn={() => handleNavigate('sign-in')}
-      />
-    );
-  }
-
-  if (currentPage === 'solar-system') {
-    return <SolarSystem onNavigate={handleNavigate} />;
-  }
-
-  if (currentPage === 'neptune') {
-    return <NeptunePage onNavigate={handleNavigate} />;
-  }
-
-  if (currentPage === 'financial-info') {
-    return (
-      <FinancialInfoPage 
-        onNavigate={handleNavigate}
-        onSubmitFinancialInfo={handleSubmitFinancialInfo}
-      />
-    );
-  }
-
-  if (currentPage === 'uranus') {
-    return <UranusPage onNavigate={handleNavigate} />;
-  }
-
-  if (currentPage === 'uranus-form') {
-    return (
-      <UranusFormPage 
-        onNavigate={handleNavigate}
-        onSubmitPreferences={handleSubmitPreferences}
-      />
-    );
-  }
-
-  if (currentPage === 'saturn') {
-    return <SaturnPage onNavigate={handleNavigate} />;
-  }
-
-  if (currentPage === 'saturn-results') {
-    return (
-      <SaturnResultsPage 
-        onNavigate={handleNavigate}
-        preferences={vehiclePreferences}
-        financialInfo={financialInfo}
-        userProfile={userProfile}
-      />
-    );
-  }
-
-  if (currentPage === 'profile') {
-    return (
-      <ProfilePage 
-        user={user}
-        onBack={() => handleNavigate('landing')}
-      />
-    );
-  }
-
-  // Landing page (default)
   return (
-    <LandingPage 
-      onSignIn={() => handleNavigate('sign-in')}
-      onSignUp={() => handleNavigate('sign-up')}
-      onNavigate={() => handleNavigate('solar-system')}
-      onViewProfile={() => handleNavigate('profile')}
-      user={user}
-      userProfile={userProfile}
-    />
+    <div className="relative overflow-hidden min-h-screen bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
+      <AnimatePresence mode="sync" initial={false}>
+        <motion.div
+          key={currentPage}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={pageVariants}
+          transition={pageTransition}
+          className="absolute inset-0 w-full h-full"
+        >
+          {renderCurrentPage()}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 

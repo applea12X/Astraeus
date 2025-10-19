@@ -48,6 +48,8 @@ ${financialInfo ? `
 - Employer: ${financialInfo.employerName}
 - Annual Income: $${financialInfo.annualIncome}
 - Credit Score: ${financialInfo.creditScore || 'Not provided'}
+- Financial Goal: ${financialInfo.financialGoal || 'Not specified'}
+- Payment Frequency Preference: ${financialInfo.paymentFrequency || 'Not specified'}
 ` : 'Financial information not provided - use vehicle preferences for budget guidance'}
 
 **Vehicle Preferences:**
@@ -58,10 +60,12 @@ ${financialInfo ? `
 - Fuel Preference: ${preferences.fuelType}
 
 **Important Considerations:**
-- Consider their credit score when suggesting lease vs buy vs finance options
-- Factor in their annual income for affordability
-- Match vehicle recommendations to their employment stability
-- Suggest appropriate down payments based on their financial profile
+- Consider their credit score (${financialInfo?.creditScore || 'unknown'}) when suggesting lease vs buy vs finance options
+- Factor in their annual income ($${financialInfo?.annualIncome || 'unknown'}) for affordability
+- Match vehicle recommendations to their employment stability (${financialInfo?.employmentStatus || 'unknown'})
+- Align with their financial goal: ${financialInfo?.financialGoal || 'general vehicle purchase'}
+- Consider their payment frequency preference: ${financialInfo?.paymentFrequency || 'monthly'}
+- Suggest appropriate down payments based on their complete financial profile
 
 **IMPORTANT: You MUST respond with ONLY valid JSON. No markdown, no code blocks, no extra text.**
 
