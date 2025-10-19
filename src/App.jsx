@@ -19,6 +19,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('landing');
   const [vehiclePreferences, setVehiclePreferences] = useState(null);
+  const [financialInfo, setFinancialInfo] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -81,6 +82,10 @@ function App() {
     setVehiclePreferences(preferences);
   };
 
+  const handleSubmitFinancialInfo = (info) => {
+    setFinancialInfo(info);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -115,7 +120,12 @@ function App() {
   }
 
   if (currentPage === 'financial-info') {
-    return <FinancialInfoPage onNavigate={handleNavigate} />;
+    return (
+      <FinancialInfoPage 
+        onNavigate={handleNavigate}
+        onSubmitFinancialInfo={handleSubmitFinancialInfo}
+      />
+    );
   }
 
   if (currentPage === 'uranus') {
@@ -132,6 +142,8 @@ function App() {
       <SaturnPage 
         onNavigate={handleNavigate}
         preferences={vehiclePreferences}
+        financialInfo={financialInfo}
+        userProfile={userProfile}
       />
     );
   }

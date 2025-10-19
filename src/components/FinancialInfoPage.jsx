@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, Clock, User, GraduationCap, Home, Coffee, ArrowLeft } from 'lucide-react';
 import { IconGrid } from './ui/icon-set';
 
-const FinancialInfoPage = ({ onNavigate }) => {
+const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     employmentStatus: '',
@@ -90,7 +90,13 @@ const FinancialInfoPage = ({ onNavigate }) => {
     } else {
       // Handle form submission here
       console.log('Financial info submitted:', formData);
-      // Navigate to next screen (placeholder for now)
+      if (onSubmitFinancialInfo) {
+        onSubmitFinancialInfo(formData);
+      }
+      // Navigate back to solar system to continue journey
+      if (onNavigate) {
+        onNavigate('solar-system');
+      }
     }
   };
 
