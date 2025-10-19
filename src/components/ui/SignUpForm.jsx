@@ -144,14 +144,14 @@ export default function SignUpForm({ onSignIn }) {
   };
 
   return (
-    <div className="relative w-full min-h-screen overflow-auto">
+    <div className="relative w-full min-h-screen overflow-y-auto overflow-x-hidden">
       {/* Animated Space Background */}
       <div className="fixed inset-0 w-full h-full" style={{ zIndex: 0 }}>
         <AnimatedShaderBackground />
       </div>
 
       {/* Background Gradient Overlay */}
-      <div 
+      <div
         className="fixed inset-0 w-full h-full"
         style={{
           background: 'radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%)',
@@ -160,14 +160,14 @@ export default function SignUpForm({ onSignIn }) {
       />
 
       {/* Main Content */}
-      <div className="relative flex items-center justify-center min-h-screen py-12 px-4" style={{ zIndex: 10 }}>
+      <div className="relative flex items-center justify-center min-h-screen py-8 sm:py-12 px-4 pb-16 sm:pb-20" style={{ zIndex: 10 }}>
         <div className="w-full max-w-md">
           {/* Glass-morphism Card */}
-          <Card className="border border-white/20 bg-black/40 backdrop-blur-xl shadow-2xl pb-0 overflow-hidden">
+          <Card className="border border-white/20 bg-black/40 backdrop-blur-xl shadow-2xl pb-0 overflow-hidden flex flex-col max-h-[90vh]">
             {/* Glow Effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 pointer-events-none" />
             
-            <CardHeader className="relative flex flex-col items-center space-y-3 pb-4 pt-8">
+            <CardHeader className="relative flex flex-col items-center space-y-3 pb-4 pt-8 flex-shrink-0">
               <AstraeusLogo className="w-16 h-16 mb-2" />
               <div className="space-y-1 flex flex-col items-center">
                 <h2 className="text-3xl font-bold text-white drop-shadow-lg">
@@ -179,7 +179,7 @@ export default function SignUpForm({ onSignIn }) {
               </div>
             </CardHeader>
 
-            <CardContent className="relative space-y-5 px-8 pb-6">
+            <CardContent className="relative space-y-5 px-8 pb-6 overflow-y-auto flex-1 min-h-0">
               <form onSubmit={handleEmailPasswordSignUp} className="space-y-5">
 
                 <div className="grid grid-cols-2 gap-4">
@@ -340,7 +340,7 @@ export default function SignUpForm({ onSignIn }) {
               </form>
             </CardContent>
 
-            <CardFooter className="relative flex justify-center border-t border-white/10 !py-4 backdrop-blur-sm">
+            <CardFooter className="relative flex justify-center border-t border-white/10 !py-4 backdrop-blur-sm flex-shrink-0">
               <p className="text-center text-sm text-white/70">
                 Already have an account?{" "}
                 <button 

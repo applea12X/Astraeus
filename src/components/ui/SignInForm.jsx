@@ -80,14 +80,14 @@ export default function SignInForm({ onSignUp }) {
   };
 
   return (
-    <div className="relative w-full min-h-screen overflow-auto">
+    <div className="relative w-full min-h-screen overflow-y-auto overflow-x-hidden">
       {/* Animated Space Background */}
       <div className="fixed inset-0 w-full h-full" style={{ zIndex: 0 }}>
         <AnimatedShaderBackground />
       </div>
 
       {/* Background Gradient Overlay */}
-      <div 
+      <div
         className="fixed inset-0 w-full h-full"
         style={{
           background: 'radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%)',
@@ -96,7 +96,7 @@ export default function SignInForm({ onSignUp }) {
       />
 
       {/* Main Content */}
-      <div className="relative flex items-center justify-center min-h-screen py-12 px-4" style={{ zIndex: 10 }}>
+      <div className="relative flex items-start justify-center min-h-screen py-8 sm:py-12 px-4 pb-16 sm:pb-20" style={{ zIndex: 10 }}>
         <div className="w-full max-w-md">
           {/* Glass-morphism Card */}
           <Card className="border border-white/20 bg-black/40 backdrop-blur-xl shadow-2xl pb-0 overflow-hidden">
