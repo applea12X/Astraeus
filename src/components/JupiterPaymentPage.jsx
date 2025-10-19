@@ -186,10 +186,7 @@ const JupiterPaymentPage = ({ onNavigate, financialInfo, selectedVehicle }) => {
         <span className="font-semibold">Back to Solar System</span>
       </motion.button>
 
-      {/* Progress Indicator */}
-      <div className="fixed top-6 right-6 z-50 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white">
-        <span className="font-semibold">Step 3 of 5</span>
-      </div>
+   
 
       {/* Main Content */}
       <div className="relative z-10 min-h-screen py-24 px-6 max-w-7xl mx-auto">
