@@ -6,6 +6,30 @@ import { auth, db } from '../firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { updateUserProgress } from '../utils/userProgress';
 
+// Import local Toyota images
+import suvImage from '../assets/toyota-suv.jpg';
+import sedanImage from '../assets/toyota-sedan.jpg';
+import truckImage from '../assets/toyota-truck.jpg';
+import minivanImage from '../assets/toyota-minivan.jpg';
+
+// Helper function to map vehicle category to local image
+const getVehicleImage = (category) => {
+  const categoryLower = category?.toLowerCase() || '';
+
+  if (categoryLower.includes('suv') || categoryLower.includes('crossover')) {
+    return suvImage;
+  } else if (categoryLower.includes('truck') || categoryLower.includes('pickup')) {
+    return truckImage;
+  } else if (categoryLower.includes('minivan') || categoryLower.includes('van')) {
+    return minivanImage;
+  } else if (categoryLower.includes('sedan') || categoryLower.includes('coupe') || categoryLower.includes('car')) {
+    return sedanImage;
+  }
+
+  // Default to sedan if category is unknown
+  return sedanImage;
+};
+
 const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => {
   const [loading, setLoading] = useState(true);
   const [vehicles, setVehicles] = useState([]);
@@ -254,10 +278,15 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
       if (storageKey) {
         console.log('🔑 Generated cache key:', storageKey);
         const cachedRecommendations = loadRecommendationsFromStorage(storageKey);
-        
+
         if (cachedRecommendations && cachedRecommendations.length > 0) {
           console.log('🎯 Cache hit! Using cached recommendations, skipping Gemini API call');
-          setVehicles(cachedRecommendations);
+          // Ensure cached vehicles have local images
+          const cachedWithImages = cachedRecommendations.map(vehicle => ({
+            ...vehicle,
+            imageUrl: getVehicleImage(vehicle.category)
+          }));
+          setVehicles(cachedWithImages);
           setLoading(false);
           return;
         } else {
@@ -346,37 +375,12 @@ ${finalFinancialInfo ? `
 
 **IMPORTANT: You MUST respond with ONLY valid JSON. No markdown, no code blocks, no extra text.**
 
-For the imageUrl field, you MUST provide a real, working, publicly accessible image URL from the web.
-
-**CRITICAL CONSISTENCY REQUIREMENT:**
-- For common Toyota/Lexus models (Camry, RAV4, Highlander, Corolla, Tacoma, 4Runner, Prius, etc.), use the SAME consistent imageUrl every time you recommend that specific model
-- Create a mental mapping: "2024 Toyota Camry" → always use the same URL
-- This ensures users see the same vehicle image across different sessions and page refreshes
-
-**URL Requirements:**
-1. Use actual car images from reputable sources (Toyota official site, automotive news sites, manufacturer press kits)
-2. Prioritize these sources in order:
-   a. Toyota/Lexus official websites (toyota.com, lexus.com)
-   b. Major automotive review sites (edmunds.com, cars.com, motortrend.com, caranddriver.com)
-   c. Automotive news sites (autoblog.com, roadandtrack.com)
-   d. Stock photo sites with real car images (Unsplash, Pexels - search for specific models)
-3. Use direct image URLs ending in .jpg, .jpeg, .png, or .webp
-4. Ensure URLs are publicly accessible (no authentication, no paywalls)
-5. URL format examples:
-   - Toyota: https://www.toyota.com/imgix/content/dam/toyota/vehicles/2024/camry/3546/restyle/gallery/exterior/1.png?fm=webp&w=930&q=90
-   - Cars.com: https://platform.cstatic-images.com/xlarge/in/v2/stock_photos/abc123/abc123_001_001.png
-   - Edmunds: https://media.ed.edmunds-media.com/toyota/camry/2024/oem/2024_toyota_camry_sedan_se_fq_oem_1_815.jpg
-   - Unsplash: https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800&q=80
-6. Prefer landscape-oriented, high-quality exterior shots showing the vehicle from a 3/4 front angle
-7. Avoid placeholder images or generic "car" images - match the specific make/model/year
-
 Return a JSON array of exactly 3 vehicle recommendations with this EXACT structure:
 [
   {
     "name": "2024 Toyota Camry LE",
     "year": "2024",
     "model": "Camry LE",
-    "imageUrl": "https://www.toyota.com/imgix/content/dam/toyota/vehicles/2024/camry/3546/restyle/gallery/exterior/1.png?fm=webp&w=930&q=90",
     "priceNew": "$26,420 - $28,500",
     "priceUsed": "$22,000 - $25,000",
     "priceLeaseMonthly": "$299 - $349/month",
@@ -467,18 +471,24 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
           name: vehicle.name,
           model: vehicle.model,
           priceNew: vehicle.priceNew,
-          hasImageUrl: !!vehicle.imageUrl,
+          category: vehicle.category,
           featuresCount: vehicle.keyFeatures?.length || 0
         });
       });
-      
-      console.log('✅ Successfully parsed vehicles:', vehicleData.length, 'vehicles');
-      setVehicles(vehicleData);
-      
-      // Save to local storage
+
+      // Add local images to each vehicle based on category
+      const vehiclesWithImages = vehicleData.map(vehicle => ({
+        ...vehicle,
+        imageUrl: getVehicleImage(vehicle.category)
+      }));
+
+      console.log('✅ Successfully parsed vehicles with local images:', vehiclesWithImages.length, 'vehicles');
+      setVehicles(vehiclesWithImages);
+
+      // Save to local storage (with local images)
       const storageKey = getStorageKey(finalPreferences, finalFinancialInfo, finalUserProfile);
       if (storageKey) {
-        saveRecommendationsToStorage(storageKey, vehicleData);
+        saveRecommendationsToStorage(storageKey, vehiclesWithImages);
       }
     } catch (error) {
       console.error('❌ Gemini API Error Details:');
