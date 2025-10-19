@@ -4,6 +4,7 @@ import { Briefcase, Clock, User, GraduationCap, Home, Coffee, ArrowLeft, Trendin
 import { IconGrid } from './ui/icon-set';
 import { auth, db } from '../firebase/config';
 import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import AIShoppingAssistant from './AIShoppingAssistant';
 
 const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -496,6 +497,14 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
       {/* Ambient light effects */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      
+      {/* AI Shopping Assistant */}
+      <AIShoppingAssistant 
+        selectedVehicle={null} 
+        financialInfo={formData} 
+        userProfile={{}} 
+        currentPageName="neptune-financial-info" 
+      />
     </motion.div>
   );
 };

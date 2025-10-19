@@ -51,7 +51,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
  *   }}
  * />
  */
-const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, pageContext = {} }) => {
+const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, pageContext = {}, currentPageName = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -74,15 +74,18 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, page
 
   // Detect current page and extract context
   const getCurrentPageContext = () => {
-    const pathname = window.location.pathname;
-    const url = window.location.href;
+    // First check if page name was explicitly provided
+    const explicitPageName = currentPageName || pageContext?.currentPageName;
     
     let pageName = 'Unknown';
     let pageDescription = '';
     let relevantData = {};
     
-    // Extract page-specific context
-    if (url.includes('saturn') || pathname.includes('saturn')) {
+    // Use explicit page name if provided, otherwise try URL detection
+    const pageIdentifier = explicitPageName || window.location.href;
+    
+    // Extract page-specific context based on page identifier
+    if (pageIdentifier.includes('saturn')) {
       pageName = 'Saturn - Vehicle Recommendations';
       pageDescription = 'This page shows AI-recommended vehicles based on your financial profile and preferences.';
       if (selectedVehicle) {
@@ -103,110 +106,161 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, page
       } catch (e) {
         // Silently fail if DOM access fails
       }
-    } else if (url.includes('jupiter') || pathname.includes('jupiter')) {
+    } else if (pageIdentifier.includes('jupiter')) {
       pageName = 'Jupiter - Purchase Planning';
       pageDescription = 'This page helps users create a detailed purchase plan including financing, timeline, and documents needed.';
       relevantData.stage = 'purchase_planning';
-    } else if (url.includes('uranus') || pathname.includes('uranus')) {
+    } else if (pageIdentifier.includes('uranus')) {
       pageName = 'Uranus - Vehicle Preferences';
       pageDescription = 'This page collects user preferences: budget, vehicle type, family size, primary use, and fuel type.';
       relevantData.stage = 'preference_collection';
-    } else if (url.includes('neptune') || pathname.includes('neptune')) {
+    } else if (pageIdentifier.includes('neptune')) {
       pageName = 'Neptune - Financial Information';
       pageDescription = 'This page collects user financial details: employment, income, credit score, and financial goals.';
       relevantData.stage = 'financial_collection';
-    } else if (url.includes('mars') || pathname.includes('mars')) {
+    } else if (pageIdentifier.includes('mars')) {
       pageName = 'Mars - Payment Simulations';
       pageDescription = 'This page provides detailed payment scenarios and financial simulations.';
       relevantData.stage = 'payment_simulation';
+    } else if (explicitPageName) {
+      // If we have an explicit page name but it didn't match above, use it
+      pageName = explicitPageName;
+      pageDescription = `Current stage: ${explicitPageName}`;
     } else {
       pageName = 'Landing Page';
       pageDescription = 'The main page where users start their car-buying journey through the solar system.';
     }
     
     // Merge with any additional pageContext passed from parent
-    return {
+    const merged = {
       pageName,
       pageDescription,
-      relevantData: {
-        ...relevantData,
-        ...(pageContext?.relevantData || {})
-      },
+      relevantData,
       ...pageContext
     };
+    
+    // Merge relevantData separately to avoid overwriting
+    if (pageContext?.relevantData) {
+      merged.relevantData = {
+        ...relevantData,
+        ...pageContext.relevantData
+      };
+    }
+    
+    return merged;
   };
 
   // Build comprehensive user context for AI
   const buildUserContext = () => {
-    const pageCtx = getCurrentPageContext();
-    
-    return {
-      // Financial Information
-      financial: financialInfo ? {
-        employmentStatus: financialInfo.employmentStatus,
-        occupation: financialInfo.occupation,
-        annualIncome: financialInfo.annualIncome,
-        creditScore: financialInfo.creditScore,
-        financialGoal: financialInfo.financialGoal,
-        hasData: true
-      } : { hasData: false },
+    try {
+      const pageCtx = getCurrentPageContext();
       
-      // Vehicle Preferences
-      preferences: userProfile?.vehiclePreferences || {},
+      const context = {
+        // Financial Information
+        financial: financialInfo ? {
+          employmentStatus: financialInfo.employmentStatus || 'not-provided',
+          occupation: financialInfo.occupation || 'not-provided',
+          annualIncome: financialInfo.annualIncome || '0',
+          creditScore: financialInfo.creditScore || 'not-provided',
+          financialGoal: financialInfo.financialGoal || 'not-provided',
+          hasData: true
+        } : { hasData: false },
+        
+        // Vehicle Preferences
+        preferences: userProfile?.vehiclePreferences || {},
+        
+        // Current Vehicle Selection
+        selectedVehicle: selectedVehicle ? {
+          name: selectedVehicle.name || 'Unknown',
+          type: selectedVehicle.type || 'Unknown',
+          price: selectedVehicle.priceNew || 'N/A',
+          year: selectedVehicle.year || 'N/A',
+          matchScore: selectedVehicle.matchScore || 0
+        } : null,
+        
+        // Page Context
+        currentPage: pageCtx,
+        
+        // User Profile
+        userInfo: {
+          email: userProfile?.email || 'not-provided',
+          zipCode: userProfile?.zipCode || '78701',
+          journeyStarted: userProfile?.journeyStarted || false
+        }
+      };
       
-      // Current Vehicle Selection
-      selectedVehicle: selectedVehicle ? {
-        name: selectedVehicle.name,
-        type: selectedVehicle.type,
-        price: selectedVehicle.priceNew,
-        year: selectedVehicle.year,
-        matchScore: selectedVehicle.matchScore
-      } : null,
-      
-      // Page Context
-      currentPage: pageCtx,
-      
-      // User Profile
-      userInfo: {
-        email: userProfile?.email,
-        zipCode: userProfile?.zipCode || '78701',
-        journeyStarted: userProfile?.journeyStarted || false
-      }
-    };
+      return context;
+    } catch (error) {
+      console.error('❌ Error building user context:', error);
+      // Return minimal context on error
+      return {
+        financial: { hasData: false },
+        preferences: {},
+        selectedVehicle: null,
+        currentPage: {
+          pageName: 'Unknown',
+          pageDescription: 'Error loading page context',
+          relevantData: {}
+        },
+        userInfo: {
+          email: 'not-provided',
+          zipCode: '78701',
+          journeyStarted: false
+        }
+      };
+    }
   };
 
   // Initialize with context-aware welcome message
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const userContext = buildUserContext();
-      const pageCtx = userContext.currentPage;
-      
-      // Build personalized welcome message
-      let welcomeContent = `👋 Hi! I'm your AI Shopping Assistant.\n\n`;
-      
-      // Add page-specific context
-      welcomeContent += `📍 You're on: **${pageCtx.pageName}**\n${pageCtx.pageDescription}\n\n`;
-      
-      // Add personalized context if available
-      if (userContext.selectedVehicle) {
-        welcomeContent += `🚗 You're looking at: **${userContext.selectedVehicle.name}**\n`;
-        welcomeContent += `💰 Price: ${userContext.selectedVehicle.price}\n\n`;
+      try {
+        const userContext = buildUserContext();
+        const pageCtx = userContext.currentPage;
+        
+        // Build personalized welcome message
+        let welcomeContent = `👋 Hi! I'm Cam, your AI Shopping Assistant.\n\n`;
+        
+        // Add page-specific context
+        welcomeContent += `📍 You're on: **${pageCtx.pageName}**\n${pageCtx.pageDescription}\n\n`;
+        
+        // Add personalized context if available
+        if (userContext.selectedVehicle) {
+          welcomeContent += `🚗 You're looking at: **${userContext.selectedVehicle.name}**\n`;
+          welcomeContent += `💰 Price: ${userContext.selectedVehicle.price}\n\n`;
+        }
+        
+        if (userContext.financial.hasData && userContext.financial.annualIncome && userContext.financial.annualIncome !== '0') {
+          try {
+            const annualIncome = parseInt(userContext.financial.annualIncome.replace(/[^0-9]/g, ''));
+            if (!isNaN(annualIncome) && annualIncome > 0) {
+              const monthlyBudget = Math.round(annualIncome * 0.15 / 12);
+              welcomeContent += `💵 Based on your income, your recommended monthly budget is ~$${monthlyBudget.toLocaleString()}\n\n`;
+            }
+          } catch (e) {
+            console.warn('Could not calculate monthly budget:', e);
+          }
+        }
+        
+        welcomeContent += `I can help you with:\n• Finding cars on Toyota.com\n• Getting insurance quotes\n• Finding nearby dealers\n• Financial advice specific to your situation\n• Navigating to helpful resources\n\nWhat would you like help with?`;
+        
+        const welcomeMessage = {
+          role: 'assistant',
+          content: welcomeContent,
+          timestamp: new Date()
+        };
+        setMessages([welcomeMessage]);
+        generateSmartLinks();
+      } catch (error) {
+        console.error('❌ Error generating welcome message:', error);
+        // Fallback welcome message
+        const fallbackMessage = {
+          role: 'assistant',
+          content: `👋 Hi! I'm Cam, your AI Shopping Assistant.\n\nI can help you find the perfect Toyota, get insurance quotes, find dealers, and more.\n\nWhat would you like help with?`,
+          timestamp: new Date()
+        };
+        setMessages([fallbackMessage]);
       }
-      
-      if (userContext.financial.hasData && userContext.financial.annualIncome) {
-        const monthlyBudget = Math.round(parseInt(userContext.financial.annualIncome) * 0.15 / 12);
-        welcomeContent += `💵 Based on your income, your recommended monthly budget is ~$${monthlyBudget}\n\n`;
-      }
-      
-      welcomeContent += `I can help you with:\n• Finding cars on Toyota.com\n• Getting insurance quotes\n• Finding nearby dealers\n• Financial advice specific to your situation\n• Navigating to helpful resources\n\nWhat would you like help with?`;
-      
-      const welcomeMessage = {
-        role: 'assistant',
-        content: welcomeContent,
-        timestamp: new Date()
-      };
-      setMessages([welcomeMessage]);
-      generateSmartLinks();
     }
   }, [isOpen]);
 
@@ -335,8 +389,13 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, page
       console.log('🧠 AI Context Sent:', {
         page: userContext.currentPage.pageName,
         hasFinancialData: userContext.financial.hasData,
+        financialInfo: userContext.financial,
         hasVehicle: !!userContext.selectedVehicle,
-        hasPreferences: Object.keys(userContext.preferences).length > 0
+        vehicleInfo: userContext.selectedVehicle,
+        hasPreferences: Object.keys(userContext.preferences).length > 0,
+        preferences: userContext.preferences,
+        pageContext: userContext.currentPage,
+        fullContext: userContext
       });
       
       const contextPrompt = `You are an AI shopping assistant helping a user through their car-buying journey. You have access to their complete profile and current page context.

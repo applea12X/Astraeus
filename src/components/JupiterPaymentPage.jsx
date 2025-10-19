@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import AnimatedShaderBackground from './ui/animated-shader-background';
 import { auth } from '../firebase/config';
 import { updateUserProgress } from '../utils/userProgress';
+import AIShoppingAssistant from './AIShoppingAssistant';
 
 const PaymentOption = ({ title, description, details, Icon, isSelected, onSelect, onToggleDetails }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -186,10 +187,7 @@ const JupiterPaymentPage = ({ onNavigate, financialInfo, selectedVehicle }) => {
         <span className="font-semibold">Back to Solar System</span>
       </motion.button>
 
-      {/* Progress Indicator */}
-      <div className="fixed top-6 right-6 z-50 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white">
-        <span className="font-semibold">Step 3 of 5</span>
-      </div>
+   
 
       {/* Main Content */}
       <div className="relative z-10 min-h-screen py-24 px-6 max-w-7xl mx-auto">
@@ -249,6 +247,14 @@ const JupiterPaymentPage = ({ onNavigate, financialInfo, selectedVehicle }) => {
       {/* Ambient light effects */}
       <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      
+      {/* AI Shopping Assistant */}
+      <AIShoppingAssistant 
+        selectedVehicle={null} 
+        financialInfo={{}} 
+        userProfile={{}} 
+        currentPageName="jupiter-payment" 
+      />
     </div>
   );
 };
