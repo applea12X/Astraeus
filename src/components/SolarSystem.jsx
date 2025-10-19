@@ -390,20 +390,26 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
               ''
           }`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
-                <img 
-                  src={sunImage} 
-                  alt={planet.name} 
-                  className="w-full h-full object-contain rounded-full"
+                <img
+                  src={sunImage}
+                  alt={planet.name}
+                  className="w-full h-full object-contain rounded-full relative z-10"
                   style={{ filter: `hue-rotate(${index * 45}deg) brightness(0.9)` }}
                 />
                 {/* Subtle planet glow */}
-                <div 
-                  className="absolute inset-0 rounded-full blur-xl -z-10"
-                  style={{ backgroundColor: planet.color, opacity: 0.35, transform: 'scale(1.5)' }}
+                <div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
+                  style={{
+                    backgroundColor: planet.color,
+                    opacity: 0.4,
+                    width: `${planet.size * 1.5}px`,
+                    height: `${planet.size * 1.5}px`,
+                    zIndex: 0
+                  }}
                 />
                 {/* Saturn ring */}
                 {planet.id === 6 && (
-                  <div 
+                  <div
                     className="absolute top-1/2 left-1/2 border-4 border-yellow-200/40 rounded-full"
                     style={{
                       width: `${planet.size * 1.8}px`,

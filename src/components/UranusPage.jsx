@@ -82,13 +82,6 @@ const UranusPage = ({ onNavigate }) => {
 
             {/* Planet glow */}
             <div className="absolute inset-0 rounded-full bg-[#4FD0E0]/40 blur-[80px] scale-110 -z-10" />
-            
-            {/* Uranus rings (tilted) */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[280px]" style={{ transform: 'translate(-50%, -50%) rotateX(75deg) rotateZ(10deg)' }}>
-              <div className="absolute inset-0 border-8 border-cyan-300/40 rounded-full" />
-              <div className="absolute inset-4 border-6 border-cyan-400/30 rounded-full" />
-              <div className="absolute inset-8 border-4 border-cyan-500/20 rounded-full" />
-            </div>
           </div>
         </motion.div>
 

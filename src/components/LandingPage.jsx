@@ -13,18 +13,9 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Starry Background Image */}
-      <div 
-        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(https://images.pexels.com/photos/8495477/pexels-photo-8495477.jpeg)',
-          zIndex: 0
-        }}
-      />
-      
-      {/* Simple animated background overlay */}
-      <div className="fixed inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1, opacity: 0.4 }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20 animate-pulse"></div>
+      {/* Animated Shader Background with Shooting Stars */}
+      <div className="fixed inset-0 w-full h-full" style={{ zIndex: 0 }}>
+        <AnimatedShaderBackground />
       </div>
 
       {/* User Profile Dropdown - Top Right */}
@@ -60,13 +51,11 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
             >
               <div className="flex flex-col items-center gap-6">
                 {/* Toyota Logo Image */}
-                <div className="bg-white rounded-[2.5rem] overflow-hidden p-200 md:p-16 shadow-2xl">
-                  <img 
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTGpPOmO3j2nk1h3x2XdI032elLVlQhBDv3A&s" 
+                  <img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTGpPOmO3j2nk1h3x2XdI032elLVlQhBDv3A&s"
                     alt="Logo"
                     className="w-40 h-auto drop-shadow-2xl rounded-2xl"
                   />
-                </div>
 
                 {/* Title */}
                 <h1
@@ -76,7 +65,7 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
                     transition: 'opacity 0.8s ease-out 0.6s'
                   }}
                 >
-                  Toyota Financial
+                  Astraeus
                 </h1>
                 
                 <p
@@ -129,7 +118,7 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
 
             {/* Tagline */}
             <p
-              className="text-blue-200 text-center max-w-2xl text-base px-10 pt-50"
+              className="text-blue-200 text-center max-w-2xl text-base px-10 pt-4"
               style={{
                 opacity: 1,
                 transition: 'opacity 0.8s ease-out 1.2s'
