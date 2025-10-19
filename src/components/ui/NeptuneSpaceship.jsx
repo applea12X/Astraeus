@@ -148,9 +148,13 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
       <div className="relative">
         {/* Spaceship Body */}
         <div className="relative w-32 h-32 flex items-center justify-center">
-          {/* Simple rocket shape */}
+          {/* Rocket Icon as ship */}
           <div className="absolute transform -rotate-45">
-            <div className="w-24 h-24 bg-red-500 rounded-t-full" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+            <Rocket 
+              className="w-24 h-24 text-red-500 drop-shadow-2xl" 
+              strokeWidth={2} 
+              fill="#ef4444" 
+            />
           </div>
           
           {/* Mascot "Cam" in the window */}
