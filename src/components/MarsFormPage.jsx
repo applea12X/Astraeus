@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CreditCard, Car, DollarSign, TrendingUp, Calendar, Wallet } from 'lucide-react';
 import { auth } from '../firebase/config';
 import { getUserProgress } from '../utils/userProgress';
-import AIShoppingAssistant from './AIShoppingAssistant';
 
 const MarsFormPage = ({ onNavigate, financialInfo, vehiclePreferences, userProfile, selectedVehicle: selectedVehicleProp }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -506,14 +505,6 @@ const MarsFormPage = ({ onNavigate, financialInfo, vehiclePreferences, userProfi
       {/* Ambient glow effects */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-      
-      {/* AI Shopping Assistant */}
-      <AIShoppingAssistant 
-        selectedVehicle={selectedVehicle} 
-        financialInfo={financialInfo} 
-        userProfile={userProfile} 
-        currentPageName="mars-form" 
-      />
     </motion.div>
   );
 };

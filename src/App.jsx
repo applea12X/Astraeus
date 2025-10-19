@@ -270,6 +270,7 @@ function App() {
         selectedVehicle={selectedVehicle}
         financialInfo={financialInfo}
         userProfile={userProfile}
+        currentPageName={currentPage}
         pageContext={{
           vehiclePreferences: vehiclePreferences
         }}

@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import AIShoppingAssistant from './AIShoppingAssistant';
 
 const SaturnPage = ({ onNavigate }) => {
   return (
@@ -182,14 +181,6 @@ const SaturnPage = ({ onNavigate }) => {
         {/* Ambient light effects */}
         <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
         <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-yellow-500/15 rounded-full blur-3xl pointer-events-none" />
-        
-        {/* AI Shopping Assistant */}
-        <AIShoppingAssistant 
-          selectedVehicle={null} 
-          financialInfo={{}} 
-          userProfile={{}} 
-          currentPageName="saturn" 
-        />
       </div>
     </motion.div>
   );

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, TrendingUp, Calculator, DollarSign, Calendar, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { auth } from '../firebase/config';
 import { updateUserProgress } from '../utils/userProgress';
-import AIShoppingAssistant from './AIShoppingAssistant';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, ComposedChart
@@ -988,14 +987,6 @@ const OpportunityCostChart = ({ analysis }) => {
           *Investment returns assume 7% annual return. Actual returns may vary.
         </div>
       </div>
-      
-      {/* AI Shopping Assistant */}
-      <AIShoppingAssistant 
-        selectedVehicle={null} 
-        financialInfo={{}} 
-        userProfile={{}} 
-        currentPageName="payment-simulations" 
-      />
     </div>
   );
 };

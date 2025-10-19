@@ -213,23 +213,23 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, page
 
   // Initialize with context-aware welcome message
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    if (isOpen) {
       try {
         const userContext = buildUserContext();
         const pageCtx = userContext.currentPage;
-        
+
         // Build personalized welcome message
         let welcomeContent = `👋 Hi! I'm Cam, your AI Shopping Assistant.\n\n`;
-        
+
         // Add page-specific context
         welcomeContent += `📍 You're on: **${pageCtx.pageName}**\n${pageCtx.pageDescription}\n\n`;
-        
+
         // Add personalized context if available
         if (userContext.selectedVehicle) {
           welcomeContent += `🚗 You're looking at: **${userContext.selectedVehicle.name}**\n`;
           welcomeContent += `💰 Price: ${userContext.selectedVehicle.price}\n\n`;
         }
-        
+
         if (userContext.financial.hasData && userContext.financial.annualIncome && userContext.financial.annualIncome !== '0') {
           try {
             const annualIncome = parseInt(userContext.financial.annualIncome.replace(/[^0-9]/g, ''));
@@ -241,9 +241,9 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, page
             console.warn('Could not calculate monthly budget:', e);
           }
         }
-        
+
         welcomeContent += `I can help you with:\n• Finding cars on Toyota.com\n• Getting insurance quotes\n• Finding nearby dealers\n• Financial advice specific to your situation\n• Navigating to helpful resources\n\nWhat would you like help with?`;
-        
+
         const welcomeMessage = {
           role: 'assistant',
           content: welcomeContent,
@@ -262,7 +262,7 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, page
         setMessages([fallbackMessage]);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, currentPageName, selectedVehicle, financialInfo]);
 
   // Generate smart links based on user profile
   const generateSmartLinks = async () => {
