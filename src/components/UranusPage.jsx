@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import AIShoppingAssistant from './AIShoppingAssistant';
 
 const UranusPage = ({ onNavigate }) => {
   return (
@@ -157,6 +158,9 @@ const UranusPage = ({ onNavigate }) => {
         <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-cyan-400/15 rounded-full blur-3xl pointer-events-none" />
         <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
       </div>
+
+      {/* AI Shopping Assistant */}
+      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} />
     </motion.div>
   );
 };
