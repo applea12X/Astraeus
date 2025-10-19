@@ -57,6 +57,7 @@ const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile, page
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedLinks, setSuggestedLinks] = useState([]);
+  const [isHovered, setIsHovered] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Safety check for API key
@@ -512,13 +513,13 @@ Respond conversationally, reference their specific situation, and provide action
       {/* Floating Alien Button */}
       <motion.button
         initial={{ scale: 0, rotate: -180 }}
-        animate={{ 
-          scale: 1, 
+        animate={{
+          scale: 1,
           rotate: 0,
           y: [0, -8, 0]
         }}
-        transition={{ 
-          delay: 0.3, 
+        transition={{
+          delay: 0.3,
           type: 'spring',
           y: {
             repeat: Infinity,
@@ -530,12 +531,14 @@ Respond conversationally, reference their specific situation, and provide action
           console.log('🤖 AI Assistant clicked!');
           setIsOpen(true);
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className="fixed bottom-6 right-6 z-[9999] cursor-pointer"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
       >
         {/* Main avatar body - matches AvatarGuide from solar system */}
-        <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full shadow-lg flex items-center justify-center relative overflow-hidden">
+        <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full shadow-lg flex items-center justify-center relative">
           {/* Cute face */}
           <div className="relative">
             {/* Eyes */}
@@ -547,7 +550,7 @@ Respond conversationally, reference their specific situation, and provide action
                 <div className="w-2 h-2 bg-black rounded-full"></div>
               </div>
             </div>
-            
+
             {/* Mouth */}
             <div className="w-4 h-2 border-2 border-white border-t-0 rounded-b-full"></div>
           </div>
@@ -562,6 +565,24 @@ Respond conversationally, reference their specific situation, and provide action
             <div className="w-2 h-2 bg-white rounded-full -mt-1 ml-[-3px] shadow-sm"></div>
           </div>
 
+          {/* Listening Ears - appear on hover */}
+          <motion.div
+            initial={{ opacity: 0, x: 5 }}
+            animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : 5 }}
+            transition={{ duration: 0.2 }}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2"
+          >
+            <div className="w-3 h-4 bg-red-400 rounded-l-full border-l-2 border-t-2 border-b-2 border-red-300"></div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -5 }}
+            animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : -5 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2"
+          >
+            <div className="w-3 h-4 bg-red-400 rounded-r-full border-r-2 border-t-2 border-b-2 border-red-300"></div>
+          </motion.div>
+
           {/* Shine effect */}
           <div className="absolute top-1 left-2 w-4 h-4 bg-white/30 rounded-full blur-sm"></div>
         </div>
@@ -570,9 +591,6 @@ Respond conversationally, reference their specific situation, and provide action
         {!isOpen && (
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
         )}
-
-        {/* Glow effect */}
-        <div className="absolute inset-0 rounded-full bg-red-400/20 blur-xl -z-10 scale-150"></div>
       </motion.button>
 
       {/* Assistant Panel */}
@@ -583,7 +601,7 @@ Respond conversationally, reference their specific situation, and provide action
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 400 }}
             transition={{ type: 'spring', damping: 25 }}
-            className="fixed right-8 bottom-28 z-50 w-[480px] h-[680px] bg-gradient-to-b from-gray-900 to-black border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed right-6 bottom-6 z-[10000] w-[min(480px,calc(100vw-3rem))] max-h-[min(680px,calc(100vh-3rem))] bg-gradient-to-b from-gray-900 to-black border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
           >
             {/* Header */}
@@ -599,7 +617,7 @@ Respond conversationally, reference their specific situation, and provide action
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all flex-shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
