@@ -630,7 +630,7 @@ const JupiterPurchasePlan = ({ onNavigate, selectedVehicle, financialInfo, payme
           className="text-center"
         >
           <button
-            onClick={() => onNavigate('solar-system')}
+            onClick={() => onNavigate('solar-system', { celebration: true })}
             className="px-12 py-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xl font-bold rounded-2xl transition-all duration-300 shadow-lg"
             style={{ boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)' }}
           >
