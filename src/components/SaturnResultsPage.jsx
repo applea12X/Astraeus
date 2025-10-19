@@ -1045,10 +1045,10 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
             Refine Preferences
           </button>
           <button
-            onClick={() => onNavigate && onNavigate('solar-system')}
+            onClick={() => onNavigate && onNavigate('jupiter')}
             className="px-8 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-semibold rounded-xl shadow-lg transition-all"
           >
-            Continue Journey →
+            Continue to Jupiter →
           </button>
         </motion.div>
       </div>
