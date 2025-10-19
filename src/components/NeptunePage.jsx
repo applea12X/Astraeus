@@ -129,7 +129,7 @@ const NeptunePage = ({ onNavigate }) => {
         ))}
 
         {/* Content overlay */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center">
+        <div className="relative z-10 h-full flex flex-col items-center justify-center pt-24">
           <div
             className="text-center"
             style={{
@@ -138,7 +138,7 @@ const NeptunePage = ({ onNavigate }) => {
               transition: 'all 1s ease-out 0.8s'
             }}
           >
-            <h1 className="text-7xl font-bold text-white drop-shadow-2xl mb-4">
+            <h1 className="text-7xl font-bold text-white drop-shadow-2xl mb-4 text-center">
               Welcome to Neptune
             </h1>
             

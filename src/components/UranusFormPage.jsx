@@ -297,28 +297,29 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
       </motion.button>
 
       {/* Title */}
-      <div className="fixed top-10 left-1/2 -translate-x-1/2 z-30 text-center">
-        <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-2">Tell Us Your Preferences</h1>
-        <p className="text-xl text-cyan-200">Help us find your perfect Toyota</p>
-        <div className="mt-4 text-white/60 text-sm">
+      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-30 text-center">
+        <h1 className="text-3xl font-bold text-white drop-shadow-2xl mb-1">Tell Us Your Preferences</h1>
+        <p className="text-sm text-cyan-200 mb-3">Help us find your perfect Toyota</p>
+
+        {/* Progress Bar */}
+        <div className="w-80 mx-auto mb-2">
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
+            <motion.div
+              className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </div>
+
+        <div className="text-white/60 text-xs">
           Step {currentStep + 1} of {steps.length}
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="fixed top-32 left-1/2 -translate-x-1/2 w-96 z-30">
-        <div className="h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
-          <motion.div
-            className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
-            initial={{ width: 0 }}
-            animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      </div>
-
       {/* Content Container */}
-      <div className="relative z-10 h-full flex items-center justify-center p-8">
+      <div className="relative z-10 h-full flex items-center justify-center pt-28 pb-6 px-8">
         <div className="w-full max-w-2xl">
           <AnimatePresence mode="wait">
             <motion.div
@@ -327,17 +328,17 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 border border-white/20 shadow-2xl"
+              className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl"
             >
               {/* Icon */}
-              <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <div className="flex justify-center mb-4">
+                <div className="w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
                   {currentStepData.icon}
                 </div>
               </div>
 
               {/* Question */}
-              <h2 className="text-3xl font-bold text-white text-center mb-8">
+              <h2 className="text-2xl font-bold text-white text-center mb-6">
                 {currentStepData.label}
               </h2>
 
@@ -347,43 +348,43 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-8 p-6 bg-cyan-500/10 border border-cyan-400/30 rounded-xl backdrop-blur-sm"
+                  className="mb-4 p-4 bg-cyan-500/10 border border-cyan-400/30 rounded-lg backdrop-blur-sm"
                 >
-                  <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-cyan-400 mt-1 flex-shrink-0" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-cyan-300 mb-2">
+                  <div className="flex items-start gap-2">
+                    <Info className="h-4 w-4 text-cyan-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-cyan-300 mb-1">
                         💡 Recommended Based on Your Income
                       </h3>
-                      <p className="text-cyan-100 text-sm mb-3">
+                      <p className="text-cyan-100 text-xs mb-2">
                         {getBudgetRecommendationMessage(priceCalculation)}
                       </p>
-                      
+
                       {priceCalculation.maxMonthlyPayment > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                          <div className="bg-cyan-600/20 p-3 rounded-lg">
-                            <div className="text-cyan-300 font-medium">Conservative</div>
-                            <div className="text-white">
+                        <div className="grid grid-cols-3 gap-1.5 text-xs">
+                          <div className="bg-cyan-600/20 p-2 rounded">
+                            <div className="text-cyan-300 font-medium text-[10px]">Conservative</div>
+                            <div className="text-white text-[11px]">
                               {formatCurrency(priceCalculation.recommendedPriceRanges.conservative.min)} - {formatCurrency(priceCalculation.recommendedPriceRanges.conservative.max)}
                             </div>
                           </div>
-                          <div className="bg-cyan-600/30 p-3 rounded-lg border border-cyan-400/50">
-                            <div className="text-cyan-200 font-medium">✨ Recommended</div>
-                            <div className="text-white font-semibold">
+                          <div className="bg-cyan-600/30 p-2 rounded border border-cyan-400/50">
+                            <div className="text-cyan-200 font-medium text-[10px]">✨ Recommended</div>
+                            <div className="text-white font-semibold text-[11px]">
                               {formatCurrency(priceCalculation.recommendedPriceRanges.moderate.min)} - {formatCurrency(priceCalculation.recommendedPriceRanges.moderate.max)}
                             </div>
                           </div>
-                          <div className="bg-cyan-600/20 p-3 rounded-lg">
-                            <div className="text-cyan-300 font-medium">Optimistic</div>
-                            <div className="text-white">
+                          <div className="bg-cyan-600/20 p-2 rounded">
+                            <div className="text-cyan-300 font-medium text-[10px]">Optimistic</div>
+                            <div className="text-white text-[11px]">
                               {formatCurrency(priceCalculation.recommendedPriceRanges.optimistic.min)} - {formatCurrency(priceCalculation.recommendedPriceRanges.optimistic.max)}
                             </div>
                           </div>
                         </div>
                       )}
-                      
-                      <div className="mt-3 text-xs text-cyan-200/80">
-                        Based on the 10% car rule: Max monthly payment of {formatCurrency(priceCalculation.maxMonthlyPayment)} 
+
+                      <div className="mt-2 text-[10px] text-cyan-200/80">
+                        Based on the 10% car rule: Max monthly payment of {formatCurrency(priceCalculation.maxMonthlyPayment)}
                         (includes insurance, gas, maintenance)
                       </div>
                     </div>
@@ -397,11 +398,11 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-8 p-4 bg-yellow-500/10 border border-yellow-400/30 rounded-xl backdrop-blur-sm"
+                  className="mb-4 p-3 bg-yellow-500/10 border border-yellow-400/30 rounded-lg backdrop-blur-sm"
                 >
-                  <div className="flex items-center gap-3">
-                    <Info className="h-5 w-5 text-yellow-400" />
-                    <p className="text-yellow-100 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-yellow-400" />
+                    <p className="text-yellow-100 text-xs">
                       Complete your financial information on Neptune to see personalized budget recommendations.
                     </p>
                   </div>
@@ -409,7 +410,7 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
               )}
 
               {/* Options */}
-              <div className="space-y-4 mb-12">
+              <div className="space-y-2.5 mb-6">
                 {currentStepData.options.map((option) => {
                   // Check if this option aligns with recommendations
                   const isRecommended = currentStepData.hasRecommendation && priceCalculation && 
@@ -419,7 +420,7 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
                     <button
                       key={option.value}
                       onClick={() => handleInputChange(currentStepData.field, option.value)}
-                      className={`w-full px-6 py-5 rounded-xl text-lg font-semibold transition-all relative ${
+                      className={`w-full px-4 py-3 rounded-lg text-base font-semibold transition-all relative ${
                         formData[currentStepData.field] === option.value
                           ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg scale-105'
                           : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/20'
@@ -428,7 +429,7 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
                       <div className="flex items-center justify-between">
                         <span>{option.label}</span>
                         {isRecommended && (
-                          <span className="text-xs bg-cyan-400/20 text-cyan-300 px-2 py-1 rounded-full">
+                          <span className="text-[10px] bg-cyan-400/20 text-cyan-300 px-2 py-0.5 rounded-full">
                             ✨ Recommended
                           </span>
                         )}
@@ -439,11 +440,11 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 {currentStep > 0 && (
                   <button
                     onClick={handleBack}
-                    className="flex-1 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-xl transition-all"
+                    className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-lg transition-all"
                   >
                     ← Back
                   </button>
@@ -451,7 +452,7 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
                 <button
                   onClick={handleNext}
                   disabled={!canProceed() || isSubmitting}
-                  className={`${currentStep > 0 ? 'flex-1' : 'w-full'} px-8 py-4 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                  className={`${currentStep > 0 ? 'flex-1' : 'w-full'} px-6 py-3 font-semibold rounded-lg transition-all flex items-center justify-center gap-2 ${
                     canProceed() && !isSubmitting
                       ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg'
                       : 'bg-white/10 text-white/50 cursor-not-allowed'
