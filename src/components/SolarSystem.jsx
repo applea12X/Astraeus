@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Rocket, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Rocket } from 'lucide-react';
 import sunImage from '../assets/sun.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 import AvatarGuide from './ui/AvatarGuide';
-import { getUserProgress, getGuideMessage, getNextSuggestion, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
+import { getUserProgress, getGuideMessage, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
 import { auth } from '../firebase/config';
 
 const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
@@ -549,7 +549,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       </div>
 
       {/* Title (static) */}
-      <div className="fixed top-10 left-10 z-30">
+      <div className="fixed top-10 left-1/2 transform -translate-x-1/2 z-30 text-center">
         <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-2">Your Financial Journey</h1>
         <p className="text-xl text-blue-200">Choose a planet to begin your adventure</p>
       </div>
@@ -557,41 +557,6 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       {/* Ambient light effects (static) */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-      
-      {/* Next Planet Suggestion Button */}
-      {!loadingProgress && userProgress && userProgress.journeyStarted && (
-        (() => {
-          const suggestion = getNextSuggestion(userProgress);
-          return suggestion.action !== 'stay' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="fixed bottom-24 right-6 z-40"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (suggestion.planet) {
-                    const planetRoutes = {
-                      neptune: 'neptune',
-                      uranus: 'uranus', 
-                      saturn: 'saturn',
-                      mars: 'mars',
-                      jupiter: 'jupiter'
-                    };
-                    onNavigate(planetRoutes[suggestion.planet]);
-                  }
-                }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 font-semibold"
-              >
-                <span>{suggestion.title}</span>
-                <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </motion.div>
-          );
-        })()
-      )}
 
       {/* Avatar Guide */}
       {!loadingProgress && (
@@ -600,7 +565,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           userName={userProfile?.firstName || 'Friend'}
           position="bottom-right"
           autoShow={true}
-          persistent={false}
+          persistent={true}
         />
       )}
 
