@@ -684,14 +684,18 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           onAnimationComplete={spaceshipEndPos ? handleTransferComplete : handleAnimationComplete}
         />
       )}
-      
-      {/* AI Shopping Assistant */}
-      <AIShoppingAssistant 
-        selectedVehicle={null} 
-        financialInfo={{}} 
-        userProfile={userProfile} 
-        currentPageName="solar-system" 
-      />
+
+      {/* Celebration Confetti */}
+      {showCelebration && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          numberOfPieces={500}
+          recycle={true}
+          colors={['#ff0000', '#cc0000', '#ffffff', '#ff6b6b', '#ffd700', '#ff1493']}
+          gravity={0.3}
+        />
+      )}
     </div>
   );
 };
