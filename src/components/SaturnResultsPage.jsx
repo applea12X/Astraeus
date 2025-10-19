@@ -2,69 +2,184 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Sparkles, Loader2, Car, DollarSign, Calendar, Zap, ArrowRight, X, CheckCircle2 } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { auth, db } from '../firebase/config';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { updateUserProgress } from '../utils/userProgress';
 
 const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => {
   const [loading, setLoading] = useState(true);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [error, setError] = useState(null);
+  
+  // State for Firebase-loaded data
+  const [loadedPreferences, setLoadedPreferences] = useState(null);
+  const [loadedFinancialInfo, setLoadedFinancialInfo] = useState(null);
+  const [loadedUserProfile, setLoadedUserProfile] = useState(null);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [savingSelection, setSavingSelection] = useState(false);
+
+  // Save vehicle selection and mark Saturn as completed
+  const saveVehicleSelection = async (selectedVehicle) => {
+    setSavingSelection(true);
+    const user = auth.currentUser;
+    if (!user) {
+      console.error('No authenticated user found');
+      setSavingSelection(false);
+      return false;
+    }
+
+    try {
+      console.log('💾 Saving vehicle selection and completing Saturn...');
+      console.log('Selected vehicle:', selectedVehicle);
+
+      // Update user progress - mark Saturn as completed, set current planet to Jupiter, and save selected vehicle
+      await updateUserProgress(user.uid, 'saturn', {
+        selectedVehicle,
+        selectedAt: new Date().toISOString(),
+        saturnCompletedAt: new Date().toISOString()
+      });
+      console.log('✅ Vehicle selection saved and Saturn marked as completed, current planet updated to Jupiter');
+
+      return true;
+    } catch (error) {
+      console.error('❌ Error saving vehicle selection:', error);
+      return false;
+    } finally {
+      setSavingSelection(false);
+    }
+  };
+
+  // Load data from Firebase if not provided via props
+  const loadDataFromFirebase = async () => {
+    console.log('🔥 Loading data from Firebase...');
+    const user = auth.currentUser;
+    if (!user) {
+      console.log('❌ No authenticated user found');
+      setDataLoading(false);
+      return;
+    }
+
+    try {
+      // Load user profile and vehicle preferences from users collection
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        console.log('📄 User document data:', userData);
+        
+        setLoadedUserProfile(userData);
+        setLoadedPreferences(userData.vehiclePreferences);
+        console.log('✅ Loaded preferences from Firebase:', userData.vehiclePreferences);
+      }
+
+      // Load financial info from financial_profiles collection
+      const financialDoc = await getDoc(doc(db, 'financial_profiles', user.uid));
+      if (financialDoc.exists()) {
+        const financialData = financialDoc.data();
+        console.log('💰 Financial document data:', financialData);
+        setLoadedFinancialInfo(financialData);
+        console.log('✅ Loaded financial info from Firebase:', financialData);
+      }
+    } catch (error) {
+      console.error('❌ Error loading data from Firebase:', error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (preferences) {
-      getAIRecommendations();
-    }
-  }, [preferences]);
+    console.log('🪐 SaturnResultsPage mounted');
+    console.log('📋 Checking component props:');
+    console.log('  - preferences:', preferences);
+    console.log('  - financialInfo:', financialInfo);
+    console.log('  - userProfile:', userProfile);
+    
+    // Load data from Firebase if not provided via props
+    loadDataFromFirebase();
+  }, []);
 
-  const getAIRecommendations = async () => {
+  // Trigger AI recommendations when data is available
+  useEffect(() => {
+    if (dataLoading) return; // Wait for Firebase data to load
+    
+    const finalPreferences = preferences || loadedPreferences;
+    const finalFinancialInfo = financialInfo || loadedFinancialInfo;
+    const finalUserProfile = userProfile || loadedUserProfile;
+    
+    console.log('🎯 Final data check:');
+    console.log('  - finalPreferences:', finalPreferences);
+    console.log('  - finalFinancialInfo:', finalFinancialInfo);
+    console.log('  - finalUserProfile:', finalUserProfile);
+    
+    if (finalPreferences) {
+      console.log('✅ Preferences found, starting AI recommendations...');
+      getAIRecommendations(finalPreferences, finalFinancialInfo, finalUserProfile);
+    } else {
+      console.log('❌ No preferences found! User needs to complete Uranus first.');
+      setError('Please complete your vehicle preferences on Uranus first.');
+      setLoading(false);
+    }
+  }, [dataLoading, preferences, loadedPreferences, financialInfo, loadedFinancialInfo, userProfile, loadedUserProfile]);
+
+  const getAIRecommendations = async (finalPreferences, finalFinancialInfo, finalUserProfile) => {
+    console.log('🚀 Starting Gemini AI recommendations...');
+    console.log('📊 Input Data:');
+    console.log('  - Preferences:', finalPreferences);
+    console.log('  - Financial Info:', finalFinancialInfo);
+    console.log('  - User Profile:', finalUserProfile);
+    
     setLoading(true);
     setError(null);
     
     try {
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      console.log('🔑 API Key status:', apiKey ? `Present (${apiKey.substring(0, 10)}...)` : 'Missing');
       
       if (!apiKey) {
         throw new Error('API key is not configured');
       }
 
+      console.log('🤖 Initializing Google Generative AI...');
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      console.log('✅ Model initialized successfully');
 
       // Build comprehensive prompt with ALL data
       const prompt = `You are a Toyota car expert and financial advisor. Based on ALL the customer information below, recommend exactly 3 Toyota or Lexus vehicles that would be the best fit. Use their financial profile to suggest appropriate financing options.
 
 **Customer Profile:**
-${userProfile ? `
-- Name: ${userProfile.firstName} ${userProfile.lastName}
-- Email: ${userProfile.email || 'Not provided'}
-- Phone: ${userProfile.phone || 'Not provided'}
-- Address: ${userProfile.address || 'Not provided'}
-- Role: ${userProfile.role || 'Customer'}
+${finalUserProfile ? `
+- Name: ${finalUserProfile.firstName} ${finalUserProfile.lastName}
+- Email: ${finalUserProfile.email || 'Not provided'}
+- Phone: ${finalUserProfile.phone || 'Not provided'}
+- Address: ${finalUserProfile.address || 'Not provided'}
+- Role: ${finalUserProfile.role || 'Customer'}
 ` : 'Basic customer information not available'}
 
 **Complete Financial Information:**
-${financialInfo ? `
-- Employment Status: ${financialInfo.employmentStatus}
-- Occupation: ${financialInfo.occupation}
-- Employer: ${financialInfo.employerName}
-- Annual Income: $${financialInfo.annualIncome}
-- Credit Score: ${financialInfo.creditScore || 'Not provided'}
-- Financial Goal: ${financialInfo.financialGoal || 'Not specified'}
-- Payment Frequency Preference: ${financialInfo.paymentFrequency || 'Not specified'}
+${finalFinancialInfo ? `
+- Employment Status: ${finalFinancialInfo.employmentStatus}
+- Occupation: ${finalFinancialInfo.occupation}
+- Employer: ${finalFinancialInfo.employerName}
+- Annual Income: $${finalFinancialInfo.annualIncome}
+- Credit Score: ${finalFinancialInfo.creditScore || 'Not provided'}
+- Financial Goal: ${finalFinancialInfo.financialGoal || 'Not specified'}
+- Payment Frequency Preference: ${finalFinancialInfo.paymentFrequency || 'Not specified'}
 ` : 'Financial information not provided - use vehicle preferences for budget guidance'}
 
 **Vehicle Preferences:**
-- Budget: ${preferences.budget}
-- Vehicle Type: ${preferences.vehicleType}
-- Family Size: ${preferences.familySize}
-- Primary Use: ${preferences.primaryUse}
-- Fuel Preference: ${preferences.fuelType}
+- Budget: ${finalPreferences.budget}
+- Vehicle Type: ${finalPreferences.vehicleType}
+- Family Size: ${finalPreferences.familySize}
+- Primary Use: ${finalPreferences.primaryUse}
+- Fuel Preference: ${finalPreferences.fuelType}
 
 **Important Considerations:**
-- Consider their credit score (${financialInfo?.creditScore || 'unknown'}) when suggesting lease vs buy vs finance options
-- Factor in their annual income ($${financialInfo?.annualIncome || 'unknown'}) for affordability
-- Match vehicle recommendations to their employment stability (${financialInfo?.employmentStatus || 'unknown'})
-- Align with their financial goal: ${financialInfo?.financialGoal || 'general vehicle purchase'}
-- Consider their payment frequency preference: ${financialInfo?.paymentFrequency || 'monthly'}
+- Consider their credit score (${finalFinancialInfo?.creditScore || 'unknown'}) when suggesting lease vs buy vs finance options
+- Factor in their annual income ($${finalFinancialInfo?.annualIncome || 'unknown'}) for affordability
+- Match vehicle recommendations to their employment stability (${finalFinancialInfo?.employmentStatus || 'unknown'})
+- Align with their financial goal: ${finalFinancialInfo?.financialGoal || 'general vehicle purchase'}
+- Consider their payment frequency preference: ${finalFinancialInfo?.paymentFrequency || 'monthly'}
 - Suggest appropriate down payments based on their complete financial profile
 
 **IMPORTANT: You MUST respond with ONLY valid JSON. No markdown, no code blocks, no extra text.**
@@ -91,7 +206,7 @@ Return a JSON array of exactly 3 vehicle recommendations with this EXACT structu
       "8-inch touchscreen with Apple CarPlay",
       "Spacious interior with 15.1 cu ft trunk"
     ],
-    "whyGoodFit": "Perfect for daily commuting with excellent fuel economy (28/39 MPG). Fits your budget and provides Toyota's legendary reliability. Spacious enough for 4-5 people comfortably. Based on your ${financialInfo?.creditScore || 'financial profile'}, you qualify for competitive financing rates.",
+    "whyGoodFit": "Perfect for daily commuting with excellent fuel economy (28/39 MPG). Fits your budget and provides Toyota's legendary reliability. Spacious enough for 4-5 people comfortably. Based on your ${finalFinancialInfo?.creditScore || 'financial profile'}, you qualify for competitive financing rates.",
     "pros": [
       "Excellent fuel efficiency",
       "Reliable and low maintenance costs",
@@ -111,46 +226,117 @@ Return a JSON array of exactly 3 vehicle recommendations with this EXACT structu
 
 CRITICAL: Return ONLY the JSON array. No other text before or after.`;
 
-      console.log('Sending prompt to Gemini...');
+      console.log('📝 Prompt prepared. Length:', prompt.length, 'characters');
+      console.log('🌍 Sending request to Gemini API...');
+      
+      const startTime = Date.now();
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      let text = response.text();
+      const endTime = Date.now();
       
-      console.log('Raw AI response:', text);
+      console.log(`⏱️ Gemini API response time: ${endTime - startTime}ms`);
+      
+      let text = response.text();
+      console.log('📥 Raw AI response received:');
+      console.log('  - Length:', text.length, 'characters');
+      console.log('  - First 200 chars:', text.substring(0, 200));
+      console.log('  - Last 200 chars:', text.substring(Math.max(0, text.length - 200)));
+      console.log('  - Full response:', text);
       
       // Clean up response - remove markdown code blocks if present
+      console.log('🧹 Cleaning response...');
+      const originalText = text;
       text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       
+      if (originalText !== text) {
+        console.log('  - Removed markdown formatting');
+        console.log('  - Cleaned text length:', text.length, 'characters');
+      } else {
+        console.log('  - No markdown formatting detected');
+      }
+      
       // Try to parse JSON
+      console.log('🔍 Attempting to parse JSON...');
       let vehicleData;
       try {
         vehicleData = JSON.parse(text);
+        console.log('✅ JSON parsed successfully!');
+        console.log('  - Type:', typeof vehicleData);
+        console.log('  - Is Array:', Array.isArray(vehicleData));
+        console.log('  - Length:', Array.isArray(vehicleData) ? vehicleData.length : 'N/A');
       } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        console.error('Attempted to parse:', text);
+        console.error('❌ JSON parse error:', parseError);
+        console.error('📄 Attempted to parse:');
+        console.error('  - Text:', text);
+        console.error('  - Text type:', typeof text);
+        console.error('  - Text length:', text.length);
         throw new Error('Failed to parse AI response as JSON. The AI might have returned invalid JSON.');
       }
       
       if (!Array.isArray(vehicleData)) {
+        console.error('❌ Response validation failed: Not an array');
+        console.error('  - Actual type:', typeof vehicleData);
+        console.error('  - Data:', vehicleData);
         throw new Error('AI response is not an array of vehicles');
       }
       
-      console.log('Successfully parsed vehicles:', vehicleData);
+      console.log('🎯 Vehicle data validation:');
+      vehicleData.forEach((vehicle, index) => {
+        console.log(`  Vehicle ${index + 1}:`, {
+          name: vehicle.name,
+          model: vehicle.model,
+          priceNew: vehicle.priceNew,
+          hasImageUrl: !!vehicle.imageUrl,
+          featuresCount: vehicle.keyFeatures?.length || 0
+        });
+      });
+      
+      console.log('✅ Successfully parsed vehicles:', vehicleData.length, 'vehicles');
       setVehicles(vehicleData);
     } catch (error) {
-      console.error('Error getting AI recommendations:', error);
+      console.error('❌ Gemini API Error Details:');
+      console.error('  - Error type:', error.constructor.name);
+      console.error('  - Error message:', error.message);
+      console.error('  - Error stack:', error.stack);
+      console.error('  - Full error object:', error);
+      
+      // Check for network/API specific errors
+      if (error.response) {
+        console.error('  - HTTP Response Status:', error.response.status);
+        console.error('  - HTTP Response Data:', error.response.data);
+      }
+      
+      if (error.status) {
+        console.error('  - API Status Code:', error.status);
+      }
       
       // Provide a more helpful error message
       let errorMessage = 'Sorry, there was an error getting recommendations. ';
       if (error.message.includes('API key')) {
         errorMessage += 'Please check your API key configuration.';
+        console.error('🔑 API Key Issue: Check environment variables');
       } else if (error.message.includes('404')) {
         errorMessage += 'The AI model is not available. Please try again later.';
+        console.error('🤖 Model Availability Issue: gemini-2.5-flash may not be accessible');
       } else if (error.message.includes('JSON')) {
         errorMessage += 'The AI returned an invalid format. Please try again.';
+        console.error('📄 JSON Parsing Issue: AI response format problem');
+      } else if (error.message.includes('quota') || error.message.includes('limit')) {
+        errorMessage += 'API quota exceeded. Please try again later.';
+        console.error('💰 Quota Issue: API usage limits reached');
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorMessage += 'Network connection issue. Please check your internet.';
+        console.error('🌐 Network Issue: Connection problems');
       } else {
         errorMessage += error.message || 'Please try again.';
+        console.error('❓ Unknown Error Type');
       }
+      
+      console.error('🔧 Suggested troubleshooting:');
+      console.error('  1. Check API key in environment variables');
+      console.error('  2. Verify internet connection');
+      console.error('  3. Check Gemini API quotas and billing');
+      console.error('  4. Verify model name (gemini-2.5-flash)');
       
       setError(errorMessage);
     } finally {
@@ -461,16 +647,45 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                 View Other Vehicles
               </button>
               <button
-                onClick={() => {
-                  // Save selected vehicle and navigate to Jupiter
-                  if (onNavigate) {
-                    onNavigate('jupiter', { selectedVehicle });
+                onClick={async () => {
+                  if (savingSelection) return; // Prevent multiple clicks
+                  
+                  // Save vehicle selection and mark Saturn as completed
+                  const saved = await saveVehicleSelection(selectedVehicle);
+                  
+                  if (saved) {
+                    // Navigate to Solar System with flight animation to Jupiter
+                    if (onNavigate) {
+                      onNavigate('solar-system', { 
+                        flight: { 
+                          from: 'saturn', 
+                          to: 'jupiter' 
+                        },
+                        selectedVehicle 
+                      });
+                    }
+                  } else {
+                    alert('Failed to save vehicle selection. Please try again.');
                   }
                 }}
-                className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2"
+                disabled={savingSelection}
+                className={`px-8 py-4 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2 ${
+                  savingSelection 
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500'
+                }`}
               >
-                <CheckCircle2 className="w-5 h-5" />
-                Select This Car & Continue →
+                {savingSelection ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Saving Selection...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5" />
+                    Select This Car & Continue →
+                  </>
+                )}
               </button>
             </div>
           </motion.div>

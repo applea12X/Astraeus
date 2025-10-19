@@ -18,6 +18,7 @@ import UranusFormPage from './components/UranusFormPage';
 import SaturnPage from './components/SaturnPage';
 import SaturnResultsPage from './components/SaturnResultsPage';
 import JupiterPage from './components/JupiterPage';
+import JupiterPaymentPage from './components/JupiterPaymentPage';
 import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
@@ -196,6 +197,14 @@ function App() {
         return (
           <JupiterPage 
             onNavigate={handleNavigate}
+            selectedVehicle={selectedVehicle}
+          />
+        );
+      case 'jupiter-payment':
+        return (
+          <JupiterPaymentPage 
+            onNavigate={handleNavigate}
+            financialInfo={financialInfo}
             selectedVehicle={selectedVehicle}
           />
         );

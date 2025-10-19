@@ -233,6 +233,50 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           requestAnimationFrame(() => computeAndStart());
         });
       }, 300);
+    } else if (flight.from === 'saturn' && flight.to === 'jupiter') {
+      // Saturn to Jupiter transfer animation
+      const computeAndStart = () => {
+        if (!saturnRef.current || !jupiterRef.current) return;
+        
+        // Try to get the landed spaceship position first
+        const landedSpaceshipElement = document.getElementById('landed-spaceship-saturn');
+        let spaceshipStartPosition;
+        
+        if (landedSpaceshipElement) {
+          const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
+          spaceshipStartPosition = {
+            x: spaceshipRect.left + spaceshipRect.width / 2,
+            y: spaceshipRect.top + spaceshipRect.height / 2
+          };
+        } else {
+          // Fallback to planet center if no landed spaceship found
+          const sRect = saturnRef.current.getBoundingClientRect();
+          spaceshipStartPosition = { 
+            x: sRect.left + sRect.width / 2, 
+            y: sRect.top + sRect.height / 2 - 40 // Approximate offset for spaceship position
+          };
+        }
+        
+        const jRect = jupiterRef.current.getBoundingClientRect();
+        const jupiterCenter = { 
+          x: jRect.left + jRect.width / 2, 
+          y: jRect.top + jRect.height / 2 
+        };
+        
+        console.log('Saturn to Jupiter - Spaceship start position:', spaceshipStartPosition, 'Jupiter center:', jupiterCenter);
+        
+        setAnimationInProgress(true);
+        setSpaceshipStartPos(spaceshipStartPosition);
+        setSpaceshipEndPos(jupiterCenter);
+        setShowSpaceship(true);
+      };
+      
+      // Give more time for layout to settle
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => computeAndStart());
+        });
+      }, 300);
     }
   }, [navPayload, hasPlayedTransfer]);
 
