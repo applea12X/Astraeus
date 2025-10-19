@@ -24,7 +24,11 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
     { id: 7, name: 'Uranus', size: 100, color: '#4FD0E0' },
     { id: 8, name: 'Neptune', size: 95, color: '#4166F5' }
   ];
-  const planets = basePlanets.map((p, i) => ({ ...p, distance: startOffsetPx + i * spacingPx }));
+  const planets = basePlanets.map((p, i) => ({ 
+    ...p, 
+    distance: startOffsetPx + i * spacingPx 
+  }));
+  
 
   const handleNeptuneClick = (e) => {
     if (neptuneRef.current) {
@@ -60,16 +64,35 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
       // Compute centers once nodes are laid out
       const computeAndStart = () => {
         if (!neptuneRef.current || !uranusRef.current) return;
+        
         const nRect = neptuneRef.current.getBoundingClientRect();
         const uRect = uranusRef.current.getBoundingClientRect();
-        const neptuneCenter = { x: nRect.left + nRect.width / 2, y: nRect.top + nRect.height / 2 };
-        const uranusCenter = { x: uRect.left + uRect.width / 2, y: uRect.top + uRect.height / 2 };
+        
+        const neptuneCenter = { 
+          x: nRect.left + nRect.width / 2, 
+          y: nRect.top + nRect.height / 2 
+        };
+        const uranusCenter = { 
+          x: uRect.left + uRect.width / 2, 
+          y: uRect.top + uRect.height / 2 
+        };
+        
+        console.log('Neptune center:', neptuneCenter, 'Uranus center:', uranusCenter);
+        console.log('Neptune rect:', nRect, 'Uranus rect:', uRect);
+        console.log('Neptune ref element:', neptuneRef.current);
+        console.log('Uranus ref element:', uranusRef.current);
+        
         setSpaceshipStartPos(neptuneCenter);
         setSpaceshipEndPos(uranusCenter);
         setShowSpaceship(true);
       };
-      // Defer to next frame to ensure layout is ready
-      requestAnimationFrame(() => computeAndStart());
+      
+      // Give more time for layout to settle, especially with horizontal scrolling
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => computeAndStart());
+        });
+      }, 300);
     }
   }, [navPayload, hasPlayedTransfer]);
 
