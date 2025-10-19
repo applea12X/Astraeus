@@ -31,6 +31,8 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const jupiterRef = useRef(null);
   const marsRef = useRef(null);
   const earthRef = useRef(null);
+  const animationStartedRef = useRef(false);
+  const lastFlightRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -192,6 +194,8 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
 
   const handleAnimationComplete = () => {
     setAnimationInProgress(false);
+    // Reset animation guards to allow new animations
+    animationStartedRef.current = false;
     // Navigate to Neptune page after animation
     if (onNavigate) {
       onNavigate('neptune');
@@ -203,12 +207,14 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
     setSpaceshipEndPos(null);
     setHasPlayedTransfer(true);
     setAnimationInProgress(false);
-    
+    // Reset animation guards to allow new animations
+    animationStartedRef.current = false;
+
     // Update landed planet to the destination and navigate to the planet page
     const flight = navPayload && navPayload.flight;
     if (flight && flight.to) {
       setLandedPlanet(flight.to);
-      
+
       // Navigate to the destination planet page after animation completes
       setTimeout(() => {
         if (onNavigate) {
@@ -223,16 +229,26 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
     if (hasPlayedTransfer) return;
     const flight = navPayload && navPayload.flight;
     if (!flight) return;
-    
+
+    // Prevent duplicate animations for the same flight path
+    const flightKey = `${flight.from}-${flight.to}`;
+    if (animationStartedRef.current || lastFlightRef.current === flightKey) {
+      return;
+    }
+
+    // Mark animation as started IMMEDIATELY before any async operations
+    animationStartedRef.current = true;
+    lastFlightRef.current = flightKey;
+
     if (flight.from === 'neptune' && flight.to === 'uranus') {
       // Compute centers once nodes are laid out
       const computeAndStart = () => {
         if (!neptuneRef.current || !uranusRef.current) return;
-        
+
         // Try to get the landed spaceship position first
         const landedSpaceshipElement = document.getElementById('landed-spaceship-neptune');
         let spaceshipStartPosition;
-        
+
         if (landedSpaceshipElement) {
           const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
           spaceshipStartPosition = {
@@ -243,23 +259,23 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           // Fallback to planet center if no landed spaceship found
           const nCenter = getPlanetImageCenter(neptuneRef);
           if (!nCenter) return;
-          spaceshipStartPosition = { 
-            x: nCenter.x, 
+          spaceshipStartPosition = {
+            x: nCenter.x,
             y: nCenter.y - 40 // Approximate offset for spaceship position
           };
         }
-        
+
         const uranusCenter = getPlanetImageCenter(uranusRef);
         if (!uranusCenter) return;
-        
+
         console.log('Spaceship start position:', spaceshipStartPosition, 'Uranus center:', uranusCenter);
-        
+
         setAnimationInProgress(true);
         setSpaceshipStartPos(spaceshipStartPosition);
         setSpaceshipEndPos(uranusCenter);
         setShowSpaceship(true);
       };
-      
+
       // Give more time for layout to settle, especially with horizontal scrolling
       setTimeout(() => {
         requestAnimationFrame(() => {
@@ -356,13 +372,13 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
         if (!jupiterCenter) return;
         
         console.log('Saturn to Jupiter - Spaceship start position:', spaceshipStartPosition, 'Jupiter center:', jupiterCenter);
-        
+
         setAnimationInProgress(true);
         setSpaceshipStartPos(spaceshipStartPosition);
         setSpaceshipEndPos(jupiterCenter);
         setShowSpaceship(true);
       };
-      
+
       // Give more time for layout to settle
       setTimeout(() => {
         requestAnimationFrame(() => {
@@ -398,13 +414,13 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
         if (!marsCenter) return;
         
         console.log('Jupiter to Mars - Spaceship start position:', spaceshipStartPosition, 'Mars center:', marsCenter);
-        
+
         setAnimationInProgress(true);
         setSpaceshipStartPos(spaceshipStartPosition);
         setSpaceshipEndPos(marsCenter);
         setShowSpaceship(true);
       };
-      
+
       // Give more time for layout to settle
       setTimeout(() => {
         requestAnimationFrame(() => {
@@ -440,13 +456,13 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
         if (!earthCenter) return;
         
         console.log('Mars to Earth - Spaceship start position:', spaceshipStartPosition, 'Earth center:', earthCenter);
-        
+
         setAnimationInProgress(true);
         setSpaceshipStartPos(spaceshipStartPosition);
         setSpaceshipEndPos(earthCenter);
         setShowSpaceship(true);
       };
-      
+
       // Give more time for layout to settle
       setTimeout(() => {
         requestAnimationFrame(() => {

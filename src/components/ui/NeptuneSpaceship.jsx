@@ -12,8 +12,13 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
   const scale = useMotionValue(0.6);
   const rotate = useMotionValue(0);
   const opacity = useMotionValue(1);
+  const animationRunning = React.useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate animations
+    if (animationRunning.current) return;
+    animationRunning.current = true;
+
     const run = async () => {
       if (!endPosition) {
         // INTRO MODE: Top of screen to Neptune
@@ -93,6 +98,7 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
       }
 
       if (onAnimationComplete) onAnimationComplete();
+      animationRunning.current = false;
     };
 
     run();

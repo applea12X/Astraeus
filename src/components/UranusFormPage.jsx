@@ -300,7 +300,7 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
       {/* Title */}
       <div className="fixed top-6 left-1/2 -translate-x-1/2 z-30 text-center">
         <h1 className="text-3xl font-bold text-white drop-shadow-2xl mb-1">Tell Us Your Preferences</h1>
-        <p className="text-sm text-cyan-200 mb-3">Help us find your perfect Toyota</p>
+
 
         {/* Progress Bar */}
         <div className="w-80 mx-auto mb-2">
