@@ -168,6 +168,7 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
         selectedVehicle={null}
         financialInfo={{}}
         userProfile={userProfile}
+        currentPageName="landing"
       />
     </div>
   );

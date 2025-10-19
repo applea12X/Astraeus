@@ -944,7 +944,7 @@ Respond in JSON format:
       </AnimatePresence>
 
       {/* AI Shopping Assistant */}
-      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} />
+      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} currentPageName="neptune" />
     </div>
   );
 };

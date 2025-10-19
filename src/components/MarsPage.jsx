@@ -223,7 +223,7 @@ const MarsPage = ({ onNavigate }) => {
       </div>
 
       {/* AI Shopping Assistant */}
-      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} />
+      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} currentPageName="mars" />
     </motion.div>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
+import AIShoppingAssistant from './AIShoppingAssistant';
 
 const JupiterLandingPage = ({ onNavigate }) => {
   return (
@@ -147,6 +148,14 @@ const JupiterLandingPage = ({ onNavigate }) => {
       {/* Ambient light effects */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
+      
+      {/* AI Shopping Assistant */}
+      <AIShoppingAssistant 
+        selectedVehicle={null} 
+        financialInfo={{}} 
+        userProfile={{}} 
+        currentPageName="jupiter" 
+      />
     </motion.div>
   );
 };

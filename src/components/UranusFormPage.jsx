@@ -479,7 +479,7 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       
       {/* AI Shopping Assistant */}
-      <AIShoppingAssistant selectedVehicle={null} financialInfo={financialInfo} userProfile={{}} />
+      <AIShoppingAssistant selectedVehicle={null} financialInfo={financialInfo} userProfile={{}} currentPageName="uranus-form" />
     </motion.div>
   );
 };
