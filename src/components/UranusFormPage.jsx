@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Car, Users, DollarSign, Zap, Target } from 'lucide-react';
+import { auth, db } from '../firebase/config';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
 
 const UranusPage = ({ onNavigate, onSubmitPreferences }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     budget: '',
     vehicleType: '',
@@ -86,16 +89,81 @@ const UranusPage = ({ onNavigate, onSubmitPreferences }) => {
     }));
   };
 
-  const handleNext = () => {
+  const saveVehiclePreferences = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error('No authenticated user found');
+      return false;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      // Prepare the vehicle preferences data with timestamp
+      const preferencesData = {
+        ...formData,
+        completedAt: new Date().toISOString(),
+        userId: user.uid
+      };
+
+      // Store in a 'vehicle_preferences' collection with user ID as document ID
+      await setDoc(doc(db, 'vehicle_preferences', user.uid), preferencesData);
+      
+      // Also update the user's main profile to indicate they completed vehicle preferences and Uranus
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          hasCompletedVehiclePreferences: true,
+          uranusCompleted: true,
+          uranusCompletedAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        });
+      } catch (updateError) {
+        // If user document doesn't exist, create it
+        if (updateError.code === 'not-found') {
+          await setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            hasCompletedVehiclePreferences: true,
+            uranusCompleted: true,
+            uranusCompletedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString()
+          });
+        } else {
+          throw updateError;
+        }
+      }
+
+      console.log('Vehicle preferences saved successfully');
+      return true;
+    } catch (error) {
+      console.error('Error saving vehicle preferences:', error);
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNext = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Submit preferences and navigate to Saturn intro
-      if (onSubmitPreferences) {
-        onSubmitPreferences(formData);
-      }
-      if (onNavigate) {
-        onNavigate('saturn');
+      // Submit preferences - save to Firebase and navigate to Saturn intro
+      console.log('Vehicle preferences submitted:', formData);
+      
+      const saved = await saveVehiclePreferences();
+      
+      if (saved) {
+        // Pass data to parent component
+        if (onSubmitPreferences) {
+          onSubmitPreferences(formData);
+        }
+        
+        // Navigate to Saturn intro
+        if (onNavigate) {
+          onNavigate('saturn');
+        }
+      } else {
+        alert('Failed to save vehicle preferences. Please try again.');
       }
     }
   };
@@ -221,14 +289,21 @@ const UranusPage = ({ onNavigate, onSubmitPreferences }) => {
                 )}
                 <button
                   onClick={handleNext}
-                  disabled={!canProceed()}
-                  className={`${currentStep > 0 ? 'flex-1' : 'w-full'} px-8 py-4 font-semibold rounded-xl transition-all ${
-                    canProceed()
+                  disabled={!canProceed() || isSubmitting}
+                  className={`${currentStep > 0 ? 'flex-1' : 'w-full'} px-8 py-4 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                    canProceed() && !isSubmitting
                       ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg'
                       : 'bg-white/10 text-white/50 cursor-not-allowed'
                   }`}
                 >
-                  {currentStep === steps.length - 1 ? 'Get Recommendations →' : 'Next →'}
+                  {isSubmitting && currentStep === steps.length - 1 ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    currentStep === steps.length - 1 ? 'Get Recommendations →' : 'Next →'
+                  )}
                 </button>
               </div>
             </motion.div>
