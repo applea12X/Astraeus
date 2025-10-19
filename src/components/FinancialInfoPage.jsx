@@ -249,8 +249,10 @@ const FinancialInfoPage = ({ onNavigate }) => {
       const success = await saveFinancialInfo();
       if (success) {
         console.log('Financial info submitted and saved:', formData);
-        // Navigate to next screen or show success message
-        onNavigate && onNavigate('neptune'); // Navigate back for now, can be changed later
+        // Navigate back to solar system and trigger Neptune → Uranus flight
+        onNavigate && onNavigate('solar-system', {
+          flight: { from: 'neptune', to: 'uranus' }
+        });
       } else {
         // Handle error - maybe show error message to user
         alert('There was an error saving your information. Please try again.');

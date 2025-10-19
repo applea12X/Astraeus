@@ -17,6 +17,7 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('landing');
+  const [navPayload, setNavPayload] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -71,7 +72,8 @@ function App() {
     return () => unsubscribe();
   }, [currentPage]);
 
-  const handleNavigate = (page) => {
+  const handleNavigate = (page, payload) => {
+    setNavPayload(payload ?? null);
     setCurrentPage(page);
   };
 
@@ -121,7 +123,7 @@ function App() {
           />
         );
       case 'solar-system':
-        return <SolarSystem onNavigate={handleNavigate} />;
+        return <SolarSystem onNavigate={handleNavigate} navPayload={navPayload} />;
       case 'neptune':
         return <NeptunePage onNavigate={handleNavigate} />;
       case 'financial-info':

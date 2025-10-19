@@ -1,13 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import sunImage from '../assets/sun.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 
-const SolarSystem = ({ onNavigate }) => {
+const SolarSystem = ({ onNavigate, navPayload }) => {
   const [showSpaceship, setShowSpaceship] = useState(false);
   const [spaceshipStartPos, setSpaceshipStartPos] = useState({ x: 0, y: 0 });
+  const [spaceshipEndPos, setSpaceshipEndPos] = useState(null);
+  const [hasPlayedTransfer, setHasPlayedTransfer] = useState(false);
   const neptuneRef = useRef(null);
+  const uranusRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -30,6 +33,7 @@ const SolarSystem = ({ onNavigate }) => {
       const centerY = rect.top + rect.height / 2;
       
       setSpaceshipStartPos({ x: centerX, y: centerY });
+      setSpaceshipEndPos(null);
       setShowSpaceship(true);
     }
   };
@@ -40,6 +44,34 @@ const SolarSystem = ({ onNavigate }) => {
       onNavigate('neptune');
     }
   };
+
+  const handleTransferComplete = () => {
+    setShowSpaceship(false);
+    setSpaceshipEndPos(null);
+    setHasPlayedTransfer(true);
+  };
+
+  // Trigger Neptune -> Uranus transfer when landing with payload
+  useEffect(() => {
+    if (hasPlayedTransfer) return;
+    const flight = navPayload && navPayload.flight;
+    if (!flight) return;
+    if (flight.from === 'neptune' && flight.to === 'uranus') {
+      // Compute centers once nodes are laid out
+      const computeAndStart = () => {
+        if (!neptuneRef.current || !uranusRef.current) return;
+        const nRect = neptuneRef.current.getBoundingClientRect();
+        const uRect = uranusRef.current.getBoundingClientRect();
+        const neptuneCenter = { x: nRect.left + nRect.width / 2, y: nRect.top + nRect.height / 2 };
+        const uranusCenter = { x: uRect.left + uRect.width / 2, y: uRect.top + uRect.height / 2 };
+        setSpaceshipStartPos(neptuneCenter);
+        setSpaceshipEndPos(uranusCenter);
+        setShowSpaceship(true);
+      };
+      // Defer to next frame to ensure layout is ready
+      requestAnimationFrame(() => computeAndStart());
+    }
+  }, [navPayload, hasPlayedTransfer]);
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-x-auto overflow-y-hidden bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
@@ -97,7 +129,7 @@ const SolarSystem = ({ onNavigate }) => {
         right: `${planet.distance}px` }} > 
         {/* Planet */} 
         <div 
-          ref={planet.id === 8 ? neptuneRef : null}
+          ref={planet.id === 8 ? neptuneRef : planet.id === 7 ? uranusRef : null}
           onClick={planet.id === 8 ? handleNeptuneClick : undefined}
           className={`relative rounded-full shadow-2xl ${planet.id === 8 ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
@@ -150,9 +182,10 @@ const SolarSystem = ({ onNavigate }) => {
       
       {/* Spaceship animation */}
       {showSpaceship && (
-        <NeptuneSpaceship 
-          startPosition={spaceshipStartPos} 
-          onAnimationComplete={handleAnimationComplete} 
+        <NeptuneSpaceship
+          startPosition={spaceshipStartPos}
+          endPosition={spaceshipEndPos}
+          onAnimationComplete={spaceshipEndPos ? handleTransferComplete : handleAnimationComplete}
         />
       )}
     </div>

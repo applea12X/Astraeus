@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { Rocket } from 'lucide-react';
 
-const NeptuneSpaceship = ({ startPosition, onAnimationComplete }) => {
+const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) => {
   const SHIP_SIZE = 128; // matches w-32 h-32
   const HALF_SHIP = SHIP_SIZE / 2;
 
@@ -14,53 +14,72 @@ const NeptuneSpaceship = ({ startPosition, onAnimationComplete }) => {
   const opacity = useMotionValue(1);
 
   useEffect(() => {
-    // Set initial position completely off-screen (above viewport)
-    const initialX = window.innerWidth / 2 - HALF_SHIP;
-    const initialY = -200; // Start well above the screen
-    
-    // Set starting values
-    x.set(initialX);
-    y.set(initialY);
-    scale.set(0.4);
-    rotate.set(45);
-    opacity.set(1);
+    // Two modes: intro-to-Neptune (no endPosition) and transfer (with endPosition)
+    const run = async () => {
+      if (!endPosition) {
+        // Intro mode: Start off-screen and fly in to Neptune
+        const initialX = window.innerWidth / 2 - HALF_SHIP;
+        const initialY = -200;
+        x.set(initialX);
+        y.set(initialY);
+        scale.set(0.4);
+        rotate.set(45);
+        opacity.set(1);
 
-    const sequence = async () => {
-      // Phase 1: Approach Neptune from distance
-      // Duration: 1.5 seconds
-      await Promise.all([
-        animate(x, startPosition.x - 150, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
-        animate(y, startPosition.y - 100, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
-        animate(scale, 0.7, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
-        animate(rotate, 0, { duration: 1.5, ease: [0.4, 0, 0.2, 1] })
-      ]);
+        // Original approach + dive sequence to Neptune
+        await Promise.all([
+          animate(x, startPosition.x - 150, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
+          animate(y, startPosition.y - 100, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
+          animate(scale, 0.7, { duration: 1.5, ease: [0.4, 0, 0.2, 1] }),
+          animate(rotate, 0, { duration: 1.5, ease: [0.4, 0, 0.2, 1] })
+        ]);
+        await Promise.all([
+          animate(x, startPosition.x - HALF_SHIP, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
+          animate(y, startPosition.y - HALF_SHIP, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
+          animate(scale, 0.9, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
+          animate(rotate, -15, { duration: 1, ease: [0.4, 0, 0.2, 1] })
+        ]);
+        await Promise.all([
+          animate(x, startPosition.x - HALF_SHIP + 20, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
+          animate(y, startPosition.y - HALF_SHIP + 10, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
+          animate(scale, 0.2, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
+          animate(opacity, 0, { duration: 0.8, ease: [0.4, 0, 0.2, 1] })
+        ]);
+      } else {
+        // Transfer mode: Start at Neptune center (startPosition) and fly to Uranus center (endPosition)
+        x.set(startPosition.x - HALF_SHIP);
+        y.set(startPosition.y - HALF_SHIP);
+        scale.set(0.6);
+        opacity.set(1);
 
-      // Phase 2: Close approach to Neptune
-      // Duration: 1 second
-      await Promise.all([
-        animate(x, startPosition.x - HALF_SHIP, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
-        animate(y, startPosition.y - HALF_SHIP, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
-        animate(scale, 0.9, { duration: 1, ease: [0.4, 0, 0.2, 1] }),
-        animate(rotate, -15, { duration: 1, ease: [0.4, 0, 0.2, 1] })
-      ]);
+        // Calculate angle to target
+        const dx = endPosition.x - startPosition.x;
+        const dy = endPosition.y - startPosition.y;
+        const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+        rotate.set(angleDeg);
 
-      // Phase 3: Dive into Neptune (shrink and fade)
-      // Duration: 0.8 seconds
-      await Promise.all([
-        animate(x, startPosition.x - HALF_SHIP + 20, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
-        animate(y, startPosition.y - HALF_SHIP + 10, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
-        animate(scale, 0.2, { duration: 0.8, ease: [0.4, 0, 0.2, 1] }),
-        animate(opacity, 0, { duration: 0.8, ease: [0.4, 0, 0.2, 1] })
-      ]);
+        // Brief hover and scale up at Neptune
+        await animate(scale, 0.8, { duration: 0.5, ease: [0.4, 0, 0.2, 1] });
 
-      // Complete animation
-      if (onAnimationComplete) {
-        onAnimationComplete();
+        // Cruise to Uranus
+        await Promise.all([
+          animate(x, endPosition.x - HALF_SHIP, { duration: 2.5, ease: [0.2, 0, 0.2, 1] }),
+          animate(y, endPosition.y - HALF_SHIP, { duration: 2.5, ease: [0.2, 0, 0.2, 1] }),
+          animate(scale, 0.9, { duration: 2.5, ease: [0.2, 0, 0.2, 1] })
+        ]);
+
+        // Arrive at Uranus and fade
+        await Promise.all([
+          animate(scale, 0.4, { duration: 0.6, ease: [0.4, 0, 0.2, 1] }),
+          animate(opacity, 0, { duration: 0.6, ease: [0.4, 0, 0.2, 1] })
+        ]);
       }
+
+      if (onAnimationComplete) onAnimationComplete();
     };
 
-    sequence();
-  }, [startPosition, onAnimationComplete, x, y, scale, rotate, opacity]);
+    run();
+  }, [startPosition, endPosition, onAnimationComplete, x, y, scale, rotate, opacity]);
 
   return (
     <motion.div
