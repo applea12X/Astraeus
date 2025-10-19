@@ -11,8 +11,7 @@ import saturnImage from '../assets/saturn.png';
 import uranusImage from '../assets/uranus.png';
 import neptuneImage from '../assets/neptune.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
-import AvatarGuide from './ui/AvatarGuide';
-import { getUserProgress, getGuideMessage, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
+import { getUserProgress, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
 import { auth } from '../firebase/config';
 
 const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
@@ -658,16 +657,6 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Avatar Guide */}
-      {!loadingProgress && (
-        <AvatarGuide
-          message={getGuideMessage(userProgress, userProfile?.firstName, 'solar-system')}
-          userName={userProfile?.firstName || 'Friend'}
-          position="bottom-right"
-          autoShow={true}
-          persistent={true}
-        />
-      )}
 
       {/* Spaceship animation */}
       {showSpaceship && (
