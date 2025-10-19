@@ -163,27 +163,8 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
           </motion.div>
         </div>
 
-        {/* Sparkle effects */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-3 h-3 bg-white rounded-full"
-            style={{
-              left: Math.random() * 80 - 40,
-              top: Math.random() * 80 - 40,
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1.5, 0]
-            }}
-            transition={{
-              duration: 1,
-              repeat: Infinity,
-              delay: i * 0.15,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
+        {/* Spaceship glow effect */}
+        <div className="absolute inset-0 bg-red-400/30 rounded-full blur-lg scale-150 animate-pulse"></div>
       </div>
     </motion.div>
   );

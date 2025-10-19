@@ -96,6 +96,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       const rect = neptuneRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
+      setAnimationInProgress(true);
       setSpaceshipStartPos({ x: centerX, y: centerY });
       setSpaceshipEndPos(null);
       setShowSpaceship(true);
@@ -111,6 +112,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   };
 
   const handleAnimationComplete = () => {
+    setAnimationInProgress(false);
     // Navigate to Neptune page after animation
     if (onNavigate) {
       onNavigate('neptune');
