@@ -8,14 +8,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Rocket, Satellite, Star, Eye, EyeOff, Sparkles, Chrome } from "lucide-react";
+import { Eye, EyeOff, Sparkles, Chrome } from "lucide-react";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
 import { auth } from "@/firebase/config";
@@ -34,8 +27,7 @@ export default function SignUpForm({ onSignIn }) {
     lastName: "",
     username: "",
     email: "",
-    password: "",
-    role: "explorer"
+    password: ""
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -46,9 +38,6 @@ export default function SignUpForm({ onSignIn }) {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleRoleChange = (value) => {
-    setFormData(prev => ({ ...prev, role: value }));
-  };
 
   const handleEmailPasswordSignUp = async (e) => {
     e.preventDefault();
@@ -161,31 +150,6 @@ export default function SignUpForm({ onSignIn }) {
 
             <CardContent className="relative space-y-5 px-8 pb-6">
               <form onSubmit={handleEmailPasswordSignUp} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="role" className="text-white/90">Role</Label>
-                  <Select value={formData.role} onValueChange={handleRoleChange} disabled={loading}>
-                    <SelectTrigger
-                      id="role"
-                      className="bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20 transition-all [&>span]:flex [&>span]:items-center [&>span]:gap-2"
-                    >
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-xl text-white">
-                      <SelectItem value="explorer" className="focus:bg-blue-600/50 focus:text-white">
-                        <Rocket size={16} aria-hidden="true" />
-                        <span className="truncate">Space Explorer</span>
-                      </SelectItem>
-                      <SelectItem value="navigator" className="focus:bg-blue-600/50 focus:text-white">
-                        <Satellite size={16} aria-hidden="true" />
-                        <span className="truncate">Navigator</span>
-                      </SelectItem>
-                      <SelectItem value="commander" className="focus:bg-blue-600/50 focus:text-white">
-                        <Star size={16} aria-hidden="true" />
-                        <span className="truncate">Mission Commander</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
