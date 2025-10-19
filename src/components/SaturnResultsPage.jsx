@@ -6,28 +6,46 @@ import { auth, db } from '../firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { updateUserProgress } from '../utils/userProgress';
 
-// Import local Toyota images
+// Import local Toyota images - 3 images per vehicle type
 import suvImage from '../assets/toyota-suv.jpg';
+import suvImage2 from '../assets/toyota-suv2.jpg';
+import suvImage3 from '../assets/toyota-suv3.avif';
 import sedanImage from '../assets/toyota-sedan.jpg';
+import sedanImage2 from '../assets/toyota-sedan2.avif';
+import sedanImage3 from '../assets/toyota-sedan3.avif';
 import truckImage from '../assets/toyota-truck.jpg';
+import truckImage2 from '../assets/toyota-truck2.avif';
+import truckImage3 from '../assets/toyota-truck3.avif';
 import minivanImage from '../assets/toyota-minivan.jpg';
+import minivanImage2 from '../assets/toyota-minivan2.avif';
+import minivanImage3 from '../assets/toyota-minivan3.avif';
 
 // Helper function to map vehicle category to local image
-const getVehicleImage = (category) => {
+// index parameter allows cycling through multiple images of the same type
+const getVehicleImage = (category, index = 0) => {
   const categoryLower = category?.toLowerCase() || '';
 
   if (categoryLower.includes('suv') || categoryLower.includes('crossover')) {
-    return suvImage;
+    // Cycle through the 3 SUV images
+    const suvImages = [suvImage, suvImage2, suvImage3];
+    return suvImages[index % suvImages.length];
   } else if (categoryLower.includes('truck') || categoryLower.includes('pickup')) {
-    return truckImage;
+    // Cycle through the 3 truck images
+    const truckImages = [truckImage, truckImage2, truckImage3];
+    return truckImages[index % truckImages.length];
   } else if (categoryLower.includes('minivan') || categoryLower.includes('van')) {
-    return minivanImage;
+    // Cycle through the 3 minivan images
+    const minivanImages = [minivanImage, minivanImage2, minivanImage3];
+    return minivanImages[index % minivanImages.length];
   } else if (categoryLower.includes('sedan') || categoryLower.includes('coupe') || categoryLower.includes('car')) {
-    return sedanImage;
+    // Cycle through the 3 sedan images
+    const sedanImages = [sedanImage, sedanImage2, sedanImage3];
+    return sedanImages[index % sedanImages.length];
   }
 
   // Default to sedan if category is unknown
-  return sedanImage;
+  const sedanImages = [sedanImage, sedanImage2, sedanImage3];
+  return sedanImages[index % sedanImages.length];
 };
 
 const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => {
@@ -281,10 +299,10 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
 
         if (cachedRecommendations && cachedRecommendations.length > 0) {
           console.log('🎯 Cache hit! Using cached recommendations, skipping Gemini API call');
-          // Ensure cached vehicles have local images
-          const cachedWithImages = cachedRecommendations.map(vehicle => ({
+          // Ensure cached vehicles have local images with unique indices
+          const cachedWithImages = cachedRecommendations.map((vehicle, index) => ({
             ...vehicle,
-            imageUrl: getVehicleImage(vehicle.category)
+            imageUrl: getVehicleImage(vehicle.category, index)
           }));
           setVehicles(cachedWithImages);
           setLoading(false);
@@ -476,10 +494,10 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
         });
       });
 
-      // Add local images to each vehicle based on category
-      const vehiclesWithImages = vehicleData.map(vehicle => ({
+      // Add local images to each vehicle based on category with unique indices
+      const vehiclesWithImages = vehicleData.map((vehicle, index) => ({
         ...vehicle,
-        imageUrl: getVehicleImage(vehicle.category)
+        imageUrl: getVehicleImage(vehicle.category, index)
       }));
 
       console.log('✅ Successfully parsed vehicles with local images:', vehiclesWithImages.length, 'vehicles');
@@ -670,10 +688,10 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex flex-col items-center justify-center fixed inset-0 w-screen h-screen overflow-auto bg-gradient-to-b from-[#2d1810] via-[#4a2c1a] to-[#1a0f08]"
+        className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-[#2d1810] via-[#4a2c1a] to-[#1a0f08]"
       >
         {/* Stars */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(150)].map((_, i) => (
             <div
               key={i}
@@ -694,10 +712,10 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => setSelectedVehicle(null)}
-          className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
+          className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-semibold">Back to List</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span className="font-semibold text-sm">Back to List</span>
         </motion.button>
 
         {/* Close Button */}
@@ -705,22 +723,23 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => setSelectedVehicle(null)}
-          className="fixed top-6 right-6 z-50 p-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
+          className="fixed top-4 right-4 z-50 p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </motion.button>
 
-        {/* Vehicle Detail Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
+        {/* Vehicle Detail Content - Scrollable */}
+        <div className="relative z-10 h-full w-full overflow-y-auto pt-16 pb-6 px-4 sm:px-6">
+          <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="space-y-6"
+            className="space-y-4"
           >
             {/* Vehicle Hero */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/20 shadow-2xl">
               {/* Vehicle Image */}
-              <div className="w-full h-64 sm:h-80 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-2xl mb-6 border border-amber-400/30 overflow-hidden">
+              <div className="w-full h-48 sm:h-64 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-xl mb-4 border border-amber-400/30 overflow-hidden">
                 {selectedVehicle.imageUrl ? (
                   <img 
                     src={selectedVehicle.imageUrl} 
@@ -741,119 +760,119 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               </div>
 
               {/* Vehicle Name */}
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{selectedVehicle.name}</h1>
-              <p className="text-lg sm:text-xl text-amber-200 mb-4">{selectedVehicle.year} {selectedVehicle.model}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">{selectedVehicle.name}</h1>
+              <p className="text-base sm:text-lg text-amber-200 mb-3">{selectedVehicle.year} {selectedVehicle.model}</p>
               
               {/* Previously Selected Indicator */}
               {savedVehicleSelection && selectedVehicle.name === savedVehicleSelection.name && (
-                <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-400/50 text-green-300 px-4 py-2 rounded-xl mb-6">
-                  <CheckCircle2 className="w-5 h-5" />
+                <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-400/50 text-green-300 px-3 py-1.5 rounded-lg mb-4 text-sm">
+                  <CheckCircle2 className="w-4 h-4" />
                   <span className="font-semibold">You previously selected this vehicle</span>
                 </div>
               )}
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div className="bg-white/5 rounded-xl p-4 text-center">
-                  <Calendar className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-                  <p className="text-white/60 text-sm">Year</p>
-                  <p className="text-white font-bold text-lg">{selectedVehicle.year}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <Calendar className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+                  <p className="text-white/60 text-xs">Year</p>
+                  <p className="text-white font-bold text-sm">{selectedVehicle.year}</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-4 text-center">
-                  <Car className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-                  <p className="text-white/60 text-sm">Type</p>
-                  <p className="text-white font-bold text-lg">{selectedVehicle.category}</p>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <Car className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+                  <p className="text-white/60 text-xs">Type</p>
+                  <p className="text-white font-bold text-sm">{selectedVehicle.category}</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-4 text-center">
-                  <Zap className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-                  <p className="text-white/60 text-sm">Fuel Economy</p>
-                  <p className="text-white font-bold text-lg">{selectedVehicle.fuelEconomy}</p>
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <Zap className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+                  <p className="text-white/60 text-xs">Fuel Economy</p>
+                  <p className="text-white font-bold text-sm">{selectedVehicle.fuelEconomy}</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-4 text-center">
-                  <svg className="w-6 h-6 text-amber-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="bg-white/5 rounded-lg p-3 text-center">
+                  <svg className="w-5 h-5 text-amber-400 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  <p className="text-white/60 text-sm">Seating</p>
-                  <p className="text-white font-bold text-lg">{selectedVehicle.seating}</p>
+                  <p className="text-white/60 text-xs">Seating</p>
+                  <p className="text-white font-bold text-sm">{selectedVehicle.seating}</p>
                 </div>
               </div>
 
               {/* Pricing */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-2xl p-4 sm:p-5 border border-green-400/30">
-                  <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                    <DollarSign className="w-6 h-6 text-green-400" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl p-3 sm:p-4 border border-green-400/30">
+                  <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-green-400" />
                     Purchase Price
                   </h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-sm">
                       <span className="text-white/70">New:</span>
                       <span className="text-white font-bold">{selectedVehicle.priceNew}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm">
                       <span className="text-white/70">Used:</span>
                       <span className="text-white font-bold">{selectedVehicle.priceUsed}</span>
                     </div>
-                    <div className="flex justify-between border-t border-white/10 pt-2">
+                    <div className="flex justify-between border-t border-white/10 pt-1.5 text-sm">
                       <span className="text-white/70">Finance:</span>
                       <span className="text-green-300 font-bold">{selectedVehicle.priceFinanceMonthly}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-2xl p-4 sm:p-5 border border-blue-400/30">
-                  <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                    <DollarSign className="w-6 h-6 text-blue-400" />
+                <div className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-xl p-3 sm:p-4 border border-blue-400/30">
+                  <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-blue-400" />
                     Lease Options
                   </h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-sm">
                       <span className="text-white/70">Monthly:</span>
                       <span className="text-white font-bold">{selectedVehicle.priceLeaseMonthly}</span>
                     </div>
-                    <p className="text-sm text-white/60 mt-4">*Typical 36-month lease with $2,000 down</p>
+                    <p className="text-xs text-white/60 mt-2">*Typical 36-month lease with $2,000 down</p>
                   </div>
                 </div>
               </div>
 
               {/* Why It's a Good Fit */}
-              <div className="bg-white/5 rounded-2xl p-4 sm:p-5 mb-5">
-                <h3 className="text-xl font-bold text-amber-400 mb-3">Why This is Perfect For You</h3>
-                <p className="text-white text-base leading-relaxed">{selectedVehicle.whyGoodFit}</p>
+              <div className="bg-white/5 rounded-xl p-3 sm:p-4 mb-4">
+                <h3 className="text-lg font-bold text-amber-400 mb-2">Why This is Perfect For You</h3>
+                <p className="text-white text-sm leading-relaxed">{selectedVehicle.whyGoodFit}</p>
               </div>
 
               {/* Key Features */}
-              <div className="mb-5">
-                <h3 className="text-xl font-bold text-white mb-3">Key Features</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-white mb-2">Key Features</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {selectedVehicle.keyFeatures.map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3 bg-white/5 rounded-xl p-4">
-                      <div className="w-2 h-2 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
-                      <span className="text-white">{feature}</span>
+                    <div key={idx} className="flex items-start gap-2 bg-white/5 rounded-lg p-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />
+                      <span className="text-white text-sm">{feature}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Pros and Cons */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <h3 className="text-xl font-bold text-green-400 mb-3">Pros</h3>
-                  <ul className="space-y-2">
+                  <h3 className="text-lg font-bold text-green-400 mb-2">Pros</h3>
+                  <ul className="space-y-1.5">
                     {selectedVehicle.pros.map((pro, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-white">
-                        <span className="text-green-400 text-xl">✓</span>
+                      <li key={idx} className="flex items-start gap-2 text-white text-sm">
+                        <span className="text-green-400 text-base">✓</span>
                         <span>{pro}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-orange-400 mb-3">Cons</h3>
-                  <ul className="space-y-2">
+                  <h3 className="text-lg font-bold text-orange-400 mb-2">Cons</h3>
+                  <ul className="space-y-1.5">
                     {selectedVehicle.cons.map((con, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-white">
-                        <span className="text-orange-400 text-xl">−</span>
+                      <li key={idx} className="flex items-start gap-2 text-white text-sm">
+                        <span className="text-orange-400 text-base">−</span>
                         <span>{con}</span>
                       </li>
                     ))}
@@ -863,10 +882,10 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 justify-center flex-wrap pt-2">
+            <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">
               <button
                 onClick={() => setSelectedVehicle(null)}
-                className="px-6 sm:px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold rounded-xl transition-all"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold text-sm rounded-lg transition-all"
               >
                 View Other Vehicles
               </button>
@@ -893,7 +912,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                   }
                 }}
                 disabled={savingSelection}
-                className={`px-6 sm:px-8 py-3 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2 ${
+                className={`px-4 sm:px-6 py-2 sm:py-2.5 text-white font-semibold text-sm rounded-lg shadow-lg transition-all flex items-center gap-2 ${
                   savingSelection
                     ? 'bg-gray-600 cursor-not-allowed'
                     : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500'
@@ -901,18 +920,19 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               >
                 {savingSelection ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Saving Selection...
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-5 h-5" />
+                    <CheckCircle2 className="w-4 h-4" />
                     Select This Car & Continue →
                   </>
                 )}
               </button>
             </div>
           </motion.div>
+          </div>
         </div>
       </motion.div>
     );
