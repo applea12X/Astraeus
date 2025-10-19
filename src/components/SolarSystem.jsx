@@ -1,18 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Rocket, ChevronRight } from 'lucide-react';
 import sunImage from '../assets/sun.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
+import AvatarGuide from './ui/AvatarGuide';
+import { getUserProgress, getGuideMessage, getNextSuggestion, startUserJourney, canAccessPlanet } from '../utils/userProgress';
+import { auth } from '../firebase/config';
 
-const SolarSystem = ({ onNavigate, navPayload }) => {
+const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const [showSpaceship, setShowSpaceship] = useState(false);
   const [spaceshipStartPos, setSpaceshipStartPos] = useState({ x: 0, y: 0 });
   const [spaceshipEndPos, setSpaceshipEndPos] = useState(null);
   const [hasPlayedTransfer, setHasPlayedTransfer] = useState(false);
+  const [userProgress, setUserProgress] = useState(null);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+  const [landedPlanet, setLandedPlanet] = useState(null);
+  const [animationInProgress, setAnimationInProgress] = useState(false);
   const neptuneRef = useRef(null);
   const uranusRef = useRef(null);
   const saturnRef = useRef(null);
   const jupiterRef = useRef(null);
+  const marsRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -32,8 +40,59 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
   }));
   
 
-  const handlePlanetClick = (planetName) => {
+  // Load user progress on component mount
+  useEffect(() => {
+    const loadUserProgress = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const progress = await getUserProgress(user.uid);
+          setUserProgress(progress);
+          
+          // Determine landed planet - should be the next planet to visit
+          let landed = null;
+          if (progress.journeyStarted) {
+            if (progress.currentPlanet && !progress[`${progress.currentPlanet}Completed`]) {
+              // Current planet not completed yet
+              landed = progress.currentPlanet;
+            } else {
+              // Find next uncompleted planet
+              const planets = ['neptune', 'uranus', 'saturn', 'mars', 'jupiter'];
+              landed = planets.find(planet => !progress[`${planet}Completed`]) || 'jupiter';
+            }
+          }
+          setLandedPlanet(landed);
+          
+        } catch (error) {
+          console.error('Error loading user progress:', error);
+        }
+      }
+      setLoadingProgress(false);
+    };
+
+    loadUserProgress();
+  }, []);
+
+  const handlePlanetClick = async (planetName) => {
+    const planetId = planetName.toLowerCase();
+    
+    // Check if user can access this planet
+    if (userProgress && !canAccessPlanet(userProgress, planetId) && planetId !== 'neptune') {
+      // Show message about completing prerequisites
+      return;
+    }
+
+    // Special handling for Neptune (starting point)
     if (planetName === 'Neptune' && neptuneRef.current) {
+      // Mark journey as started if it hasn't been
+      const user = auth.currentUser;
+      if (user && !userProgress?.journeyStarted) {
+        await startUserJourney(user.uid);
+        // Reload progress
+        const updatedProgress = await getUserProgress(user.uid);
+        setUserProgress(updatedProgress);
+      }
+      
       const rect = neptuneRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
@@ -62,41 +121,111 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
     setShowSpaceship(false);
     setSpaceshipEndPos(null);
     setHasPlayedTransfer(true);
+    setAnimationInProgress(false);
+    
+    // Update landed planet to the destination and navigate to the planet page
+    const flight = navPayload && navPayload.flight;
+    if (flight && flight.to) {
+      setLandedPlanet(flight.to);
+      
+      // Navigate to the destination planet page after animation completes
+      setTimeout(() => {
+        if (onNavigate) {
+          onNavigate(flight.to);
+        }
+      }, 1000); // Small delay to show the landed spaceship briefly
+    }
   };
 
-  // Trigger Neptune -> Uranus transfer when landing with payload
+  // Trigger planet transfer when landing with payload
   useEffect(() => {
     if (hasPlayedTransfer) return;
     const flight = navPayload && navPayload.flight;
     if (!flight) return;
+    
     if (flight.from === 'neptune' && flight.to === 'uranus') {
       // Compute centers once nodes are laid out
       const computeAndStart = () => {
         if (!neptuneRef.current || !uranusRef.current) return;
         
-        const nRect = neptuneRef.current.getBoundingClientRect();
-        const uRect = uranusRef.current.getBoundingClientRect();
+        // Try to get the landed spaceship position first
+        const landedSpaceshipElement = document.getElementById('landed-spaceship-neptune');
+        let spaceshipStartPosition;
         
-        const neptuneCenter = { 
-          x: nRect.left + nRect.width / 2, 
-          y: nRect.top + nRect.height / 2 
-        };
+        if (landedSpaceshipElement) {
+          const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
+          spaceshipStartPosition = {
+            x: spaceshipRect.left + spaceshipRect.width / 2,
+            y: spaceshipRect.top + spaceshipRect.height / 2
+          };
+        } else {
+          // Fallback to planet center if no landed spaceship found
+          const nRect = neptuneRef.current.getBoundingClientRect();
+          spaceshipStartPosition = { 
+            x: nRect.left + nRect.width / 2, 
+            y: nRect.top + nRect.height / 2 - 40 // Approximate offset for spaceship position
+          };
+        }
+        
+        const uRect = uranusRef.current.getBoundingClientRect();
         const uranusCenter = { 
           x: uRect.left + uRect.width / 2, 
           y: uRect.top + uRect.height / 2 
         };
         
-        console.log('Neptune center:', neptuneCenter, 'Uranus center:', uranusCenter);
-        console.log('Neptune rect:', nRect, 'Uranus rect:', uRect);
-        console.log('Neptune ref element:', neptuneRef.current);
-        console.log('Uranus ref element:', uranusRef.current);
+        console.log('Spaceship start position:', spaceshipStartPosition, 'Uranus center:', uranusCenter);
         
-        setSpaceshipStartPos(neptuneCenter);
+        setAnimationInProgress(true);
+        setSpaceshipStartPos(spaceshipStartPosition);
         setSpaceshipEndPos(uranusCenter);
         setShowSpaceship(true);
       };
       
       // Give more time for layout to settle, especially with horizontal scrolling
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => computeAndStart());
+        });
+      }, 300);
+    } else if (flight.from === 'uranus' && flight.to === 'saturn') {
+      // Uranus to Saturn transfer animation
+      const computeAndStart = () => {
+        if (!uranusRef.current || !saturnRef.current) return;
+        
+        // Try to get the landed spaceship position first
+        const landedSpaceshipElement = document.getElementById('landed-spaceship-uranus');
+        let spaceshipStartPosition;
+        
+        if (landedSpaceshipElement) {
+          const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
+          spaceshipStartPosition = {
+            x: spaceshipRect.left + spaceshipRect.width / 2,
+            y: spaceshipRect.top + spaceshipRect.height / 2
+          };
+        } else {
+          // Fallback to planet center if no landed spaceship found
+          const uRect = uranusRef.current.getBoundingClientRect();
+          spaceshipStartPosition = { 
+            x: uRect.left + uRect.width / 2, 
+            y: uRect.top + uRect.height / 2 - 40 // Approximate offset for spaceship position
+          };
+        }
+        
+        const sRect = saturnRef.current.getBoundingClientRect();
+        const saturnCenter = { 
+          x: sRect.left + sRect.width / 2, 
+          y: sRect.top + sRect.height / 2 
+        };
+        
+        console.log('Uranus to Saturn - Spaceship start position:', spaceshipStartPosition, 'Saturn center:', saturnCenter);
+        
+        setAnimationInProgress(true);
+        setSpaceshipStartPos(spaceshipStartPosition);
+        setSpaceshipEndPos(saturnCenter);
+        setShowSpaceship(true);
+      };
+      
+      // Give more time for layout to settle
       setTimeout(() => {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => computeAndStart());
@@ -161,9 +290,15 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
         right: `${planet.distance}px` }} > 
         {/* Planet */} 
         <div 
-          ref={planet.id === 8 ? neptuneRef : planet.id === 7 ? uranusRef : planet.id === 6 ? saturnRef : planet.id === 5 ? jupiterRef : null}
+          ref={planet.id === 8 ? neptuneRef : planet.id === 7 ? uranusRef : planet.id === 6 ? saturnRef : planet.id === 5 ? jupiterRef : planet.id === 4 ? marsRef : null}
           onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : planet.id === 5 ? () => handlePlanetClick('Jupiter') : planet.id === 4 ? () => handlePlanetClick('Mars') : undefined}
-          className={`relative rounded-full shadow-2xl ${(planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
+          className={`relative rounded-full shadow-2xl ${
+            (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) ? 
+              userProgress && canAccessPlanet(userProgress, planet.name.toLowerCase()) || planet.id === 8 ?
+                'cursor-pointer hover:scale-110 transition-transform duration-300' :
+                'cursor-not-allowed opacity-50' :
+              ''
+          }`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
                 <img 
                   src={sunImage} 
@@ -191,11 +326,64 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
                 )}
               </div>
 
+              {/* Landed Spaceship Indicator */}
+              {landedPlanet === planet.name.toLowerCase() && !animationInProgress && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute -top-6 left-1/2 -translate-x-1/2 z-10"
+                  id={`landed-spaceship-${planet.name.toLowerCase()}`}
+                >
+                  <div className="relative w-12 h-12 flex items-center justify-center">
+                    {/* Static version of spaceship */}
+                    <div className="relative transform -rotate-45">
+                      <Rocket 
+                        className="w-10 h-10 text-red-500 drop-shadow-lg" 
+                        strokeWidth={2} 
+                        fill="#ef4444" 
+                      />
+                    </div>
+                    
+                    {/* Mascot "Cam" in the window */}
+                    <div className="absolute top-2 left-3 w-4 h-4 bg-blue-400 rounded-full border border-cyan-300 flex items-center justify-center z-10">
+                      <div className="text-sm">🐱</div>
+                    </div>
+
+                    {/* Gentle pulsing glow */}
+                    <motion.div
+                      animate={{
+                        opacity: [0.3, 0.6, 0.3],
+                        scale: [0.8, 1.1, 0.8]
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      className="absolute inset-0 bg-red-400/30 rounded-full blur-sm scale-150"
+                    />
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Completed indicator */}
+              {userProgress?.[`${planet.name.toLowerCase()}Completed`] && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center z-10"
+                >
+                  <span className="text-white text-xs font-bold">✓</span>
+                </motion.div>
+              )}
+
               {/* Planet label */}
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
                 <div className={`w-[80px] text-center py-1.5 rounded-full text-sm font-semibold shadow-lg ${
                   (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) 
-                    ? (planet.id === 4 ? 'bg-red-500/90 text-white animate-pulse' : 'bg-blue-500/90 text-white animate-pulse')
+                    ? userProgress && canAccessPlanet(userProgress, planet.name.toLowerCase()) || planet.id === 8
+                      ? (planet.id === 4 ? 'bg-red-500/90 text-white animate-pulse' : 'bg-blue-500/90 text-white animate-pulse')
+                      : 'bg-gray-500/90 text-gray-300'
                     : 'bg-white/90 text-gray-900'
                 }`}>
                   {planet.name}
@@ -216,6 +404,52 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
       
+      {/* Next Planet Suggestion Button */}
+      {!loadingProgress && userProgress && userProgress.journeyStarted && (
+        (() => {
+          const suggestion = getNextSuggestion(userProgress);
+          return suggestion.action !== 'stay' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="fixed bottom-24 right-6 z-40"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (suggestion.planet) {
+                    const planetRoutes = {
+                      neptune: 'neptune',
+                      uranus: 'uranus', 
+                      saturn: 'saturn',
+                      mars: 'mars',
+                      jupiter: 'jupiter'
+                    };
+                    onNavigate(planetRoutes[suggestion.planet]);
+                  }
+                }}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 font-semibold"
+              >
+                <span>{suggestion.title}</span>
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </motion.div>
+          );
+        })()
+      )}
+
+      {/* Avatar Guide */}
+      {!loadingProgress && (
+        <AvatarGuide
+          message={getGuideMessage(userProgress, userProfile?.firstName, 'solar-system')}
+          userName={userProfile?.firstName || 'Friend'}
+          position="bottom-right"
+          autoShow={true}
+          persistent={false}
+        />
+      )}
+
       {/* Spaceship animation */}
       {showSpaceship && (
         <NeptuneSpaceship
