@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Sparkles, Loader2, Car, DollarSign, Calendar, Zap, ArrowRight, X, CheckCircle2, RefreshCw } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import PetCompanion from './ui/PetCompanion';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { updateUserProgress } from '../utils/userProgress';
@@ -1055,6 +1056,9 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
       {/* Ambient glow */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Pet Companion */}
+      <PetCompanion position="bottom-right" />
     </motion.div>
   );
 };

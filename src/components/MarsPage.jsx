@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import PetCompanion from './ui/PetCompanion';
 
 const MarsPage = ({ onNavigate }) => {
   return (
@@ -220,6 +221,9 @@ const MarsPage = ({ onNavigate }) => {
         <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-red-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       </div>
+
+      {/* Pet Companion */}
+      <PetCompanion position="bottom-right" />
     </motion.div>
   );
 };

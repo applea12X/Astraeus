@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, Clock, User, GraduationCap, Home, Coffee, ArrowLeft, TrendingUp, TrendingDown, Minus, Star, Target, Car, Building, Calendar, DollarSign } from 'lucide-react';
 import { IconGrid } from './ui/icon-set';
+import PetCompanion from './ui/PetCompanion';
 import { auth, db } from '../firebase/config';
 import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 
@@ -496,6 +497,9 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
       {/* Ambient light effects */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Pet Companion */}
+      <PetCompanion position="bottom-right" />
     </motion.div>
   );
 };

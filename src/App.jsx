@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase/config';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PetProvider } from './contexts/PetContext';
 import LandingPage from './components/LandingPage';
 import SignInForm from './components/ui/SignInForm';
 import SignUpForm from './components/ui/SignUpForm';
@@ -223,21 +224,23 @@ function App() {
   };
 
   return (
-    <div className="relative overflow-hidden min-h-screen bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
-      <AnimatePresence mode="sync" initial={false}>
-        <motion.div
-          key={currentPage}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={pageVariants}
-          transition={pageTransition}
-          className="absolute inset-0 w-full h-full"
-        >
-          {renderCurrentPage()}
-        </motion.div>
-      </AnimatePresence>
-    </div>
+    <PetProvider user={user}>
+      <div className="relative overflow-hidden min-h-screen bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
+        <AnimatePresence mode="sync" initial={false}>
+          <motion.div
+            key={currentPage}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            transition={pageTransition}
+            className="absolute inset-0 w-full h-full"
+          >
+            {renderCurrentPage()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </PetProvider>
   );
 }
 

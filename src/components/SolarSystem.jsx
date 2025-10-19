@@ -4,6 +4,7 @@ import { ArrowLeft, Rocket, ChevronRight } from 'lucide-react';
 import sunImage from '../assets/sun.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 import AvatarGuide from './ui/AvatarGuide';
+import PetCompanion from './ui/PetCompanion';
 import { getUserProgress, getGuideMessage, getNextSuggestion, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
 import { auth } from '../firebase/config';
 
@@ -578,6 +579,9 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           onAnimationComplete={spaceshipEndPos ? handleTransferComplete : handleAnimationComplete}
         />
       )}
+
+      {/* Pet Companion */}
+      <PetCompanion position="bottom-right" />
     </div>
   );
 };
