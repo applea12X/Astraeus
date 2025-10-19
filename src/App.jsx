@@ -11,6 +11,7 @@ import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
 import ProfilePage from './components/ProfilePage';
 import FinancialInfoPage from './components/FinancialInfoPage';
+import JupiterPage from './components/JupiterPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -126,6 +127,8 @@ function App() {
         return <NeptunePage onNavigate={handleNavigate} />;
       case 'financial-info':
         return <FinancialInfoPage onNavigate={handleNavigate} />;
+      case 'jupiter':
+        return <JupiterPage onNavigate={handleNavigate} financialInfo={null} />;
       case 'profile':
         return (
           <ProfilePage 

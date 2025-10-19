@@ -92,8 +92,8 @@ const SolarSystem = ({ onNavigate }) => {
         {/* Planet */} 
         <div 
           ref={planet.id === 8 ? neptuneRef : null}
-          onClick={planet.id === 8 ? handleNeptuneClick : undefined}
-          className={`relative rounded-full shadow-2xl ${planet.id === 8 ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
+          onClick={planet.id === 8 ? handleNeptuneClick : (planet.id === 5 ? () => onNavigate('jupiter') : undefined)}
+          className={`relative rounded-full shadow-2xl ${(planet.id === 8 || planet.id === 5) ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
                 <img 
                   src={sunImage} 

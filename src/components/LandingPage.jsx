@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedShaderBackground from '../components/ui/animated-shader-background';
 import GalaxyButton from './ui/GalaxyButton';
 import UserProfileDropdown from './ui/UserProfileDropdown';
 
 const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, userProfile }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -117,10 +122,6 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
 
                   <GalaxyButton onClick={onSignUp} className="min-w-52">
                     Sign Up
-                  </GalaxyButton>
-
-                  <GalaxyButton onClick={onNavigate} className="min-w-52">
-                    Start Journey
                   </GalaxyButton>
                 </>
               )}
