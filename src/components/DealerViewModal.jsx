@@ -240,7 +240,7 @@ const DealerViewModal = ({ userId, userProfile, onClose }) => {
           {/* Demo Disclaimer */}
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg mx-8 mt-6 p-4">
             <p className="text-yellow-200 text-sm font-semibold">
-              Demo Mode: This is a demonstration view for dealership staff. Some data may be simulated.
+              Demo Mode: This is a demonstration view for dealership staff.
             </p>
           </div>
 
