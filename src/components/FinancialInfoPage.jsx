@@ -207,10 +207,12 @@ const FinancialInfoPage = ({ onNavigate }) => {
       // Store in a 'financial_profiles' collection with user ID as document ID
       await setDoc(doc(db, 'financial_profiles', user.uid), financialData);
       
-      // Also update the user's main profile to indicate they completed financial info
+      // Also update the user's main profile to indicate they completed financial info and Neptune
       try {
         await updateDoc(doc(db, 'users', user.uid), {
           hasCompletedFinancialInfo: true,
+          neptuneCompleted: true,
+          neptuneCompletedAt: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         });
       } catch (updateError) {
@@ -219,6 +221,8 @@ const FinancialInfoPage = ({ onNavigate }) => {
           await setDoc(doc(db, 'users', user.uid), {
             email: user.email,
             hasCompletedFinancialInfo: true,
+            neptuneCompleted: true,
+            neptuneCompletedAt: new Date().toISOString(),
             createdAt: new Date().toISOString(),
             lastUpdated: new Date().toISOString()
           });
