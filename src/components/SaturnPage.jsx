@@ -90,12 +90,23 @@ const SaturnPage = ({ onNavigate }) => {
             <div className="absolute inset-0 rounded-full bg-[#FAD5A5]/40 blur-[80px] scale-110 -z-10" />
             
             {/* Saturn's magnificent rings */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[360px]" style={{ transform: 'translate(-50%, -50%) rotateX(75deg)' }}>
-              <div className="absolute inset-0 border-[16px] border-amber-200/50 rounded-full" />
-              <div className="absolute inset-6 border-[12px] border-yellow-300/40 rounded-full" />
-              <div className="absolute inset-12 border-[8px] border-amber-300/30 rounded-full" />
-              <div className="absolute inset-20 border-[6px] border-yellow-400/25 rounded-full" />
-            </div>
+            <motion.div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[360px]"
+              style={{ transformStyle: 'preserve-3d' }}
+              animate={{
+                rotateZ: [0, 360],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              <div className="absolute inset-0 border-[16px] border-amber-200/50 rounded-full" style={{ transform: 'rotateX(75deg)' }} />
+              <div className="absolute inset-6 border-[12px] border-yellow-300/40 rounded-full" style={{ transform: 'rotateX(75deg)' }} />
+              <div className="absolute inset-12 border-[8px] border-amber-300/30 rounded-full" style={{ transform: 'rotateX(75deg)' }} />
+              <div className="absolute inset-20 border-[6px] border-yellow-400/25 rounded-full" style={{ transform: 'rotateX(75deg)' }} />
+            </motion.div>
           </div>
         </motion.div>
 
