@@ -216,6 +216,15 @@ function App() {
             selectedVehicle={selectedVehicle}
           />
         );
+      case 'jupiter-plan':
+        return (
+          <JupiterPurchasePlan 
+            onNavigate={handleNavigate}
+            selectedVehicle={selectedVehicle}
+            financialInfo={financialInfo}
+            paymentMethod={navPayload?.paymentMethod || 'finance'}
+          />
+        );
       case 'earth':
         return (
           <JupiterPurchasePlan 

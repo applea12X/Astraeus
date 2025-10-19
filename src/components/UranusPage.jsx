@@ -160,7 +160,7 @@ const UranusPage = ({ onNavigate }) => {
       </div>
 
       {/* AI Shopping Assistant */}
-      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} />
+      <AIShoppingAssistant selectedVehicle={null} financialInfo={{}} userProfile={{}} currentPageName="uranus" />
     </motion.div>
   );
 };

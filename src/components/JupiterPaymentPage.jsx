@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import AnimatedShaderBackground from './ui/animated-shader-background';
 import { auth } from '../firebase/config';
 import { updateUserProgress } from '../utils/userProgress';
+import AIShoppingAssistant from './AIShoppingAssistant';
 
 const PaymentOption = ({ title, description, details, Icon, isSelected, onSelect, onToggleDetails }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -246,6 +247,14 @@ const JupiterPaymentPage = ({ onNavigate, financialInfo, selectedVehicle }) => {
       {/* Ambient light effects */}
       <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      
+      {/* AI Shopping Assistant */}
+      <AIShoppingAssistant 
+        selectedVehicle={null} 
+        financialInfo={{}} 
+        userProfile={{}} 
+        currentPageName="jupiter-payment" 
+      />
     </div>
   );
 };
