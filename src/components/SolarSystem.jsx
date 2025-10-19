@@ -8,6 +8,8 @@ const SolarSystem = ({ onNavigate }) => {
   const [showSpaceship, setShowSpaceship] = useState(false);
   const [spaceshipStartPos, setSpaceshipStartPos] = useState({ x: 0, y: 0 });
   const neptuneRef = useRef(null);
+  const uranusRef = useRef(null);
+  const saturnRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -23,14 +25,17 @@ const SolarSystem = ({ onNavigate }) => {
   ];
   const planets = basePlanets.map((p, i) => ({ ...p, distance: startOffsetPx + i * spacingPx }));
 
-  const handleNeptuneClick = (e) => {
-    if (neptuneRef.current) {
+  const handlePlanetClick = (planetName) => {
+    if (planetName === 'Neptune' && neptuneRef.current) {
       const rect = neptuneRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      
       setSpaceshipStartPos({ x: centerX, y: centerY });
       setShowSpaceship(true);
+    } else if (planetName === 'Uranus') {
+      onNavigate('uranus');
+    } else if (planetName === 'Saturn') {
+      onNavigate('saturn');
     }
   };
 
@@ -91,9 +96,9 @@ const SolarSystem = ({ onNavigate }) => {
         right: `${planet.distance}px` }} > 
         {/* Planet */} 
         <div 
-          ref={planet.id === 8 ? neptuneRef : null}
-          onClick={planet.id === 8 ? handleNeptuneClick : undefined}
-          className={`relative rounded-full shadow-2xl ${planet.id === 8 ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
+          ref={planet.id === 8 ? neptuneRef : (planet.id === 7 ? uranusRef : (planet.id === 6 ? saturnRef : null))}
+          onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : (planet.id === 7 ? () => handlePlanetClick('Uranus') : (planet.id === 6 ? () => handlePlanetClick('Saturn') : undefined))}
+          className={`relative rounded-full shadow-2xl ${(planet.id === 8 || planet.id === 7 || planet.id === 6) ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
                 <img 
                   src={sunImage} 

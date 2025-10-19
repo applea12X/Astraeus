@@ -9,6 +9,8 @@ import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
 import ProfilePage from './components/ProfilePage';
+import UranusPage from './components/UranusPage';
+import SaturnPage from './components/SaturnPage';
 import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('landing');
+  const [vehiclePreferences, setVehiclePreferences] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -74,6 +77,10 @@ function App() {
     setCurrentPage(page);
   };
 
+  const handleSubmitPreferences = (preferences) => {
+    setVehiclePreferences(preferences);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -109,6 +116,24 @@ function App() {
 
   if (currentPage === 'financial-info') {
     return <FinancialInfoPage onNavigate={handleNavigate} />;
+  }
+
+  if (currentPage === 'uranus') {
+    return (
+      <UranusPage 
+        onNavigate={handleNavigate}
+        onSubmitPreferences={handleSubmitPreferences}
+      />
+    );
+  }
+
+  if (currentPage === 'saturn') {
+    return (
+      <SaturnPage 
+        onNavigate={handleNavigate}
+        preferences={vehiclePreferences}
+      />
+    );
   }
 
   if (currentPage === 'profile') {
