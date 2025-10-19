@@ -1063,6 +1063,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
           selectedVehicle={selectedVehicle || vehicles[0]}
           financialInfo={financialInfo}
           userProfile={userProfile}
+          currentPageName="saturn-results"
           pageContext={{
             allRecommendations: vehicles.map(v => ({
               name: v.name,

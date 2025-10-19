@@ -652,6 +652,7 @@ const JupiterPurchasePlan = ({ onNavigate, selectedVehicle, financialInfo, payme
         selectedVehicle={selectedVehicle}
         financialInfo={financialInfo}
         userProfile={{}}
+        currentPageName="jupiter-plan"
       />
     </motion.div>
   );
