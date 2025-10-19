@@ -10,7 +10,9 @@ import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
 import ProfilePage from './components/ProfilePage';
 import UranusPage from './components/UranusPage';
+import UranusFormPage from './components/UranusFormPage';
 import SaturnPage from './components/SaturnPage';
+import SaturnResultsPage from './components/SaturnResultsPage';
 import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
@@ -129,8 +131,12 @@ function App() {
   }
 
   if (currentPage === 'uranus') {
+    return <UranusPage onNavigate={handleNavigate} />;
+  }
+
+  if (currentPage === 'uranus-form') {
     return (
-      <UranusPage 
+      <UranusFormPage 
         onNavigate={handleNavigate}
         onSubmitPreferences={handleSubmitPreferences}
       />
@@ -138,8 +144,12 @@ function App() {
   }
 
   if (currentPage === 'saturn') {
+    return <SaturnPage onNavigate={handleNavigate} />;
+  }
+
+  if (currentPage === 'saturn-results') {
     return (
-      <SaturnPage 
+      <SaturnResultsPage 
         onNavigate={handleNavigate}
         preferences={vehiclePreferences}
         financialInfo={financialInfo}

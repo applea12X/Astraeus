@@ -1,145 +1,20 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Car, Users, DollarSign, Zap, Target } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 
-const UranusPage = ({ onNavigate, onSubmitPreferences }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState({
-    budget: '',
-    vehicleType: '',
-    familySize: '',
-    primaryUse: '',
-    fuelType: ''
-  });
-
-  const steps = [
-    {
-      field: 'budget',
-      label: 'What is your budget range?',
-      type: 'select',
-      icon: <DollarSign className="h-8 w-8" />,
-      options: [
-        { value: 'under-25k', label: 'Under $25,000' },
-        { value: '25k-35k', label: '$25,000 - $35,000' },
-        { value: '35k-50k', label: '$35,000 - $50,000' },
-        { value: '50k-75k', label: '$50,000 - $75,000' },
-        { value: 'over-75k', label: 'Over $75,000' }
-      ]
-    },
-    {
-      field: 'vehicleType',
-      label: 'What type of vehicle do you prefer?',
-      type: 'select',
-      icon: <Car className="h-8 w-8" />,
-      options: [
-        { value: 'sedan', label: 'Sedan' },
-        { value: 'suv', label: 'SUV' },
-        { value: 'truck', label: 'Truck' },
-        { value: 'minivan', label: 'Minivan' },
-        { value: 'hybrid', label: 'Hybrid' },
-        { value: 'electric', label: 'Electric' }
-      ]
-    },
-    {
-      field: 'familySize',
-      label: 'How many people will regularly use this vehicle?',
-      type: 'select',
-      icon: <Users className="h-8 w-8" />,
-      options: [
-        { value: '1-2', label: '1-2 people' },
-        { value: '3-4', label: '3-4 people' },
-        { value: '5-6', label: '5-6 people' },
-        { value: '7+', label: '7+ people' }
-      ]
-    },
-    {
-      field: 'primaryUse',
-      label: 'What will be the primary use?',
-      type: 'select',
-      icon: <Target className="h-8 w-8" />,
-      options: [
-        { value: 'daily-commute', label: 'Daily Commute' },
-        { value: 'family-trips', label: 'Family Road Trips' },
-        { value: 'off-road', label: 'Off-Road Adventures' },
-        { value: 'business', label: 'Business/Work' },
-        { value: 'mixed', label: 'Mixed Use' }
-      ]
-    },
-    {
-      field: 'fuelType',
-      label: 'Fuel preference?',
-      type: 'select',
-      icon: <Zap className="h-8 w-8" />,
-      options: [
-        { value: 'gas', label: 'Gasoline' },
-        { value: 'hybrid', label: 'Hybrid' },
-        { value: 'electric', label: 'Electric' },
-        { value: 'no-preference', label: 'No Preference' }
-      ]
-    }
-  ];
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // Submit preferences and navigate to Saturn
-      if (onSubmitPreferences) {
-        onSubmitPreferences(formData);
-      }
-      if (onNavigate) {
-        onNavigate('saturn');
-      }
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const canProceed = () => {
-    const currentField = steps[currentStep].field;
-    return formData[currentField] && formData[currentField].trim() !== '';
-  };
-
-  const currentStepData = steps[currentStep];
-
+const UranusPage = ({ onNavigate }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-[#0a1929] via-[#1e3a5f] to-[#0f1d2e]"
+      transition={{ duration: 1 }}
+      className="fixed inset-0 w-screen h-screen overflow-hidden"
     >
-      {/* Stars Background */}
-      <div className="absolute inset-0">
-        {[...Array(140)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-white"
-            style={{
-              width: Math.random() * 3 + 1 + 'px',
-              height: Math.random() * 3 + 1 + 'px',
-              top: Math.random() * 100 + '%',
-              left: Math.random() * 100 + '%',
-              opacity: Math.random() * 0.7 + 0.3
-            }}
-          />
-        ))}
-      </div>
-
       {/* Back Button */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
         onClick={() => onNavigate && onNavigate('solar-system')}
         className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
       >
@@ -147,100 +22,151 @@ const UranusPage = ({ onNavigate, onSubmitPreferences }) => {
         <span className="font-semibold">Back to Solar System</span>
       </motion.button>
 
-      {/* Title */}
-      <div className="fixed top-10 left-1/2 -translate-x-1/2 z-30 text-center">
-        <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-2">Tell Us Your Preferences</h1>
-        <p className="text-xl text-cyan-200">Help us find your perfect Toyota</p>
-        <div className="mt-4 text-white/60 text-sm">
-          Step {currentStep + 1} of {steps.length}
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="fixed top-32 left-1/2 -translate-x-1/2 w-96 z-30">
-        <div className="h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
-          <motion.div
-            className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
-            initial={{ width: 0 }}
-            animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      </div>
-
-      {/* Content Container */}
-      <div className="relative z-10 h-full flex items-center justify-center p-8">
-        <div className="w-full max-w-2xl">
-          <AnimatePresence mode="wait">
+      {/* Uranus-themed gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a1929] via-[#1e3a5f] to-[#0f1d2e]">
+        {/* Animated stars */}
+        <div className="absolute inset-0">
+          {[...Array(200)].map((_, i) => (
             <motion.div
-              key={currentStep}
-              initial={{ x: 300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 border border-white/20 shadow-2xl"
-            >
-              {/* Icon */}
-              <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
-                  {currentStepData.icon}
-                </div>
-              </div>
-
-              {/* Question */}
-              <h2 className="text-3xl font-bold text-white text-center mb-12">
-                {currentStepData.label}
-              </h2>
-
-              {/* Options */}
-              <div className="space-y-4 mb-12">
-                {currentStepData.options.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleInputChange(currentStepData.field, option.value)}
-                    className={`w-full px-6 py-5 rounded-xl text-lg font-semibold transition-all ${
-                      formData[currentStepData.field] === option.value
-                        ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg scale-105'
-                        : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/20'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex gap-4">
-                {currentStep > 0 && (
-                  <button
-                    onClick={handleBack}
-                    className="flex-1 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-xl transition-all"
-                  >
-                    ← Back
-                  </button>
-                )}
-                <button
-                  onClick={handleNext}
-                  disabled={!canProceed()}
-                  className={`${currentStep > 0 ? 'flex-1' : 'w-full'} px-8 py-4 font-semibold rounded-xl transition-all ${
-                    canProceed()
-                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg'
-                      : 'bg-white/10 text-white/50 cursor-not-allowed'
-                  }`}
-                >
-                  {currentStep === steps.length - 1 ? 'Get Recommendations →' : 'Next →'}
-                </button>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+              key={i}
+              className="absolute rounded-full bg-white"
+              initial={{
+                width: Math.random() * 3 + 1 + 'px',
+                height: Math.random() * 3 + 1 + 'px',
+                top: Math.random() * 100 + '%',
+                left: Math.random() * 100 + '%',
+                opacity: Math.random() * 0.7 + 0.3
+              }}
+              animate={{
+                opacity: [Math.random() * 0.7 + 0.3, Math.random() * 0.3, Math.random() * 0.7 + 0.3]
+              }}
+              transition={{
+                duration: Math.random() * 3 + 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
         </div>
-      </div>
 
-      {/* Ambient glow effects */}
-      <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Large cartoon Uranus in the background */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.5, delay: 0.3 }}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+        >
+          {/* Uranus planet */}
+          <div className="relative w-[600px] h-[600px]">
+            {/* Main planet body */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#4FD0E0] via-[#3DB5C5] to-[#2A8FA0] shadow-2xl">
+              {/* Atmospheric features */}
+              <div className="absolute inset-0 rounded-full overflow-hidden">
+                <motion.div
+                  className="absolute w-full h-[60px] bg-[#6FE0F0]/30 blur-sm"
+                  style={{ top: '25%' }}
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                />
+                <motion.div
+                  className="absolute w-full h-[50px] bg-[#5FD0E0]/25 blur-sm"
+                  style={{ top: '50%' }}
+                  animate={{ x: ['100%', '-100%'] }}
+                  transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
+
+              {/* Highlight/shine */}
+              <div className="absolute top-[20%] left-[25%] w-[150px] h-[150px] rounded-full bg-white/25 blur-3xl" />
+            </div>
+
+            {/* Planet glow */}
+            <div className="absolute inset-0 rounded-full bg-[#4FD0E0]/40 blur-[80px] scale-110 -z-10" />
+            
+            {/* Uranus rings (tilted) */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[280px]" style={{ transform: 'translate(-50%, -50%) rotateX(75deg) rotateZ(10deg)' }}>
+              <div className="absolute inset-0 border-8 border-cyan-300/40 rounded-full" />
+              <div className="absolute inset-4 border-6 border-cyan-400/30 rounded-full" />
+              <div className="absolute inset-8 border-4 border-cyan-500/20 rounded-full" />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Floating particles */}
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={`particle-${i}`}
+            className="absolute rounded-full bg-cyan-400/20 blur-xl"
+            style={{
+              width: Math.random() * 150 + 80 + 'px',
+              height: Math.random() * 80 + 40 + 'px',
+              top: Math.random() * 100 + '%',
+              left: Math.random() * 100 + '%',
+            }}
+            animate={{
+              x: [0, Math.random() * 80 - 40],
+              y: [0, Math.random() * 80 - 40],
+              opacity: [0.1, 0.25, 0.1]
+            }}
+            transition={{
+              duration: Math.random() * 8 + 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+
+        {/* Content overlay */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center">
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="text-center"
+          >
+            <h1 className="text-7xl font-bold text-white drop-shadow-2xl mb-4">
+              Welcome to Uranus
+            </h1>
+            
+            {/* Interactive content area */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+              className="mt-12 bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-2xl mx-auto border border-white/20"
+            >
+              <h2 className="text-3xl font-semibold text-white mb-4">
+                Discover Your Perfect Vehicle
+              </h2>
+              <p className="text-lg text-cyan-100 leading-relaxed">
+                Uranus represents your personal preferences and lifestyle. 
+                Help us understand what you're looking for in your next vehicle 
+                by answering a few simple questions about your needs.
+              </p>
+              
+              {/* Next button */}
+              <motion.button
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 1.8 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavigate && onNavigate('uranus-form')}
+                className="mt-8 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Next →
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Ambient light effects */}
+        <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-cyan-400/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+      </div>
     </motion.div>
   );
 };
 
 export default UranusPage;
+

@@ -9,7 +9,8 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
     employmentStatus: '',
     occupation: '',
     employerName: '',
-    annualIncome: ''
+    annualIncome: '',
+    creditScore: ''
   });
 
   const steps = [
@@ -74,6 +75,20 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
       label: 'Annual Income (before tax)',
       type: 'number',
       placeholder: 'e.g., 50000'
+    },
+    {
+      field: 'creditScore',
+      label: 'Credit Score',
+      type: 'select',
+      placeholder: 'Select your credit score range',
+      options: [
+        { value: 'excellent', label: '750+ (Excellent)' },
+        { value: 'good', label: '700-749 (Good)' },
+        { value: 'fair', label: '650-699 (Fair)' },
+        { value: 'poor', label: '600-649 (Poor)' },
+        { value: 'very-poor', label: 'Below 600 (Very Poor)' },
+        { value: 'unknown', label: 'I don\'t know' }
+      ]
     }
   ];
 
@@ -192,6 +207,22 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
                     onItemClick={(item) => handleInputChange(currentStepData.field, item.value)}
                     className="max-w-2xl mx-auto"
                   />
+                ) : currentStepData.type === 'select' ? (
+                  <div className="space-y-4">
+                    {currentStepData.options.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleInputChange(currentStepData.field, option.value)}
+                        className={`w-full px-6 py-5 rounded-2xl text-lg font-semibold transition-all ${
+                          formData[currentStepData.field] === option.value
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl scale-105'
+                            : 'bg-white/15 text-white/90 hover:bg-white/25 border border-white/30'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 ) : (
                   <div className="flex justify-center">
                     <div className="relative w-3/4">
