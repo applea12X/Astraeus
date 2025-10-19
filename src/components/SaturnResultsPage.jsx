@@ -268,7 +268,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="fixed inset-0 w-screen h-screen overflow-auto bg-gradient-to-b from-[#2d1810] via-[#4a2c1a] to-[#1a0f08]"
+        className="flex flex-col items-center justify-center fixed inset-0 w-screen h-screen overflow-auto bg-gradient-to-b from-[#2d1810] via-[#4a2c1a] to-[#1a0f08]"
       >
         {/* Stars */}
         <div className="absolute inset-0 overflow-hidden">
@@ -318,7 +318,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
             {/* Vehicle Hero */}
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 shadow-2xl">
               {/* Vehicle Image */}
-              <div className="w-full h-96 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-2xl mb-8 border border-amber-400/30 overflow-hidden">
+              <div className="mt-10 mb-10 w-full h-96 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-2xl mb-8 border border-amber-400/30 overflow-hidden">
                 {selectedVehicle.imageUrl ? (
                   <img 
                     src={selectedVehicle.imageUrl} 

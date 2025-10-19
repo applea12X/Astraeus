@@ -158,23 +158,6 @@ const NeptunePage = ({ onNavigate }) => {
                 Here you'll enter your preliminary financial information to get started.
               </p>
               
-              {/* Financial topics grid */}
-              <div className="mt-8 grid grid-cols-3 gap-4">
-                {['Investments', 'Retirement', 'Savings'].map((topic, i) => (
-                  <motion.button
-                    key={topic}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 1.2 + i * 0.1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-gradient-to-br from-blue-500 to-blue-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
-                  >
-                    {topic}
-                  </motion.button>
-                ))}
-              </div>
-              
               {/* Next button */}
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
