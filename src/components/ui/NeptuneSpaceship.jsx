@@ -126,8 +126,32 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
           </div>
           
           {/* Mascot "Cam" in the window */}
-          <div className="absolute top-8 left-10 w-10 h-10 bg-blue-400 rounded-full border-4 border-cyan-300 shadow-xl flex items-center justify-center z-10">
-            <div className="text-2xl">🐱</div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-full border-2 border-cyan-300 shadow-xl flex items-center justify-center z-10">
+            {/* Cute face */}
+            <div className="relative">
+              {/* Eyes */}
+              <div className="flex gap-1 mb-0.5">
+                <div className="w-1.5 h-1.5 bg-white rounded-full flex items-center justify-center">
+                  <div className="w-1 h-1 bg-black rounded-full"></div>
+                </div>
+                <div className="w-1.5 h-1.5 bg-white rounded-full flex items-center justify-center">
+                  <div className="w-1 h-1 bg-black rounded-full"></div>
+                </div>
+              </div>
+
+              {/* Mouth */}
+              <div className="w-2 h-1 border border-white border-t-0 rounded-b-full"></div>
+            </div>
+
+            {/* Antennae */}
+            <div className="absolute -top-1 left-1.5">
+              <div className="w-0.5 h-2 bg-red-300"></div>
+              <div className="w-1 h-1 bg-white rounded-full -mt-0.5 ml-[-2px]"></div>
+            </div>
+            <div className="absolute -top-1 right-1.5">
+              <div className="w-0.5 h-2 bg-red-300"></div>
+              <div className="w-1 h-1 bg-white rounded-full -mt-0.5 ml-[-2px]"></div>
+            </div>
           </div>
 
           {/* Engine glow/fire trail */}

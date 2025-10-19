@@ -441,8 +441,32 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
                     </div>
                     
                     {/* Mascot "Cam" in the window */}
-                    <div className="absolute top-2 left-3 w-4 h-4 bg-blue-400 rounded-full border border-cyan-300 flex items-center justify-center z-10">
-                      <div className="text-sm">🐱</div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-gradient-to-br from-red-400 to-red-600 rounded-full border border-cyan-300 flex items-center justify-center z-10">
+                      {/* Cute face */}
+                      <div className="relative scale-50">
+                        {/* Eyes */}
+                        <div className="flex gap-0.5">
+                          <div className="w-1 h-1 bg-white rounded-full flex items-center justify-center">
+                            <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
+                          </div>
+                          <div className="w-1 h-1 bg-white rounded-full flex items-center justify-center">
+                            <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* Mouth */}
+                        <div className="w-1.5 h-0.5 border border-white border-t-0 rounded-b-full mt-0.5"></div>
+                      </div>
+
+                      {/* Antennae */}
+                      <div className="absolute -top-0.5 left-0.5 scale-50">
+                        <div className="w-0.5 h-1.5 bg-red-300"></div>
+                        <div className="w-0.5 h-0.5 bg-white rounded-full -mt-0.5"></div>
+                      </div>
+                      <div className="absolute -top-0.5 right-0.5 scale-50">
+                        <div className="w-0.5 h-1.5 bg-red-300"></div>
+                        <div className="w-0.5 h-0.5 bg-white rounded-full -mt-0.5"></div>
+                      </div>
                     </div>
 
                     {/* Gentle pulsing glow */}
