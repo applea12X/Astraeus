@@ -163,6 +163,8 @@ function App() {
         return <PaymentSimulationPage onNavigate={handleNavigate} navPayload={navPayload} />;
       case 'financial-info':
         return <FinancialInfoPage onNavigate={handleNavigate} onSubmitFinancialInfo={handleSubmitFinancialInfo} />;
+      case 'jupiter':
+        return <JupiterPage onNavigate={handleNavigate} financialInfo={null} />;
       case 'profile':
         return (
           <ProfilePage 

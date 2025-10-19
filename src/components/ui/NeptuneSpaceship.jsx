@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
-import { motion, useMotionValue, animate } from 'framer-motion';
-import { Rocket } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+// Temporarily removed framer-motion and lucide-react for simplified setup
+// import { motion, useMotionValue, animate } from 'framer-motion';
+// import { Rocket } from 'lucide-react';
 
 const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) => {
   const SHIP_SIZE = 128; // matches w-32 h-32
@@ -99,30 +100,13 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
   }, [startPosition, endPosition, onAnimationComplete, x, y, scale, rotate, opacity]);
 
   return (
-    <motion.div
-      className="fixed z-50 pointer-events-none"
-      style={{ 
-        top: 0,
-        left: 0,
-        x, 
-        y, 
-        scale,
-        rotate,
-        opacity,
-        originX: 0.5,
-        originY: 0.5
-      }}
-    >
+    <div style={getAnimationStyle()}>
       <div className="relative">
         {/* Spaceship Body */}
         <div className="relative w-32 h-32 flex items-center justify-center">
-          {/* Rocket Icon as ship */}
+          {/* Simple rocket shape */}
           <div className="absolute transform -rotate-45">
-            <Rocket 
-              className="w-24 h-24 text-red-500 drop-shadow-2xl" 
-              strokeWidth={2} 
-              fill="#ef4444" 
-            />
+            <div className="w-24 h-24 bg-red-500 rounded-t-full" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
           </div>
           
           {/* Mascot "Cam" in the window */}
@@ -131,61 +115,30 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
           </div>
 
           {/* Engine glow/fire trail */}
-          <motion.div
-            className="absolute -bottom-4 -right-4 w-20 h-20"
-            animate={{
-              opacity: [0.6, 1, 0.6],
-              scale: [0.8, 1.2, 0.8]
-            }}
-            transition={{
-              duration: 0.3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 animate-pulse">
             <div className="w-full h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 rounded-full blur-xl opacity-80"></div>
-          </motion.div>
+          </div>
 
           {/* Stars trailing effect */}
-          <motion.div
-            className="absolute -left-8 top-1/2 transform -translate-y-1/2"
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1, 1.5]
-            }}
-            transition={{
-              duration: 0.5,
-              repeat: Infinity,
-              ease: "easeOut"
-            }}
-          >
+          <div className="absolute -left-8 top-1/2 transform -translate-y-1/2 animate-pulse">
             <div className="text-yellow-300 text-4xl">✨</div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Sparkle effects */}
         {[...Array(8)].map((_, i) => (
-          <motion.div
+          <div
             key={i}
-            className="absolute w-3 h-3 bg-white rounded-full"
+            className="absolute w-3 h-3 bg-white rounded-full animate-pulse"
             style={{
               left: Math.random() * 80 - 40,
               top: Math.random() * 80 - 40,
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1.5, 0]
-            }}
-            transition={{
-              duration: 1,
-              repeat: Infinity,
-              delay: i * 0.15,
-              ease: "easeInOut"
+              animationDelay: `${i * 0.15}s`,
             }}
           />
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
