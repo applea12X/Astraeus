@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedShaderBackground from '../components/ui/animated-shader-background';
 import GalaxyButton from './ui/GalaxyButton';
 import UserProfileDropdown from './ui/UserProfileDropdown';
-import RedAlienLogo from './ui/RedAlienLogo';
 import AIShoppingAssistant from './AIShoppingAssistant';
 
 const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, userProfile }) => {
@@ -52,10 +51,12 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
               }}
             >
               <div className="flex flex-col items-center gap-6">
-                {/* Red Alien Logo */}
-                  <div className="drop-shadow-2xl animate-pulse">
-                    <RedAlienLogo size={160} />
-                  </div>
+                {/* Toyota Financial Services Logo */}
+                  <img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTGpPOmO3j2nk1h3x2XdI032elLVlQhBDv3A&s"
+                    alt="Toyota Financial Services Logo"
+                    className="w-40 h-auto drop-shadow-2xl rounded-2xl"
+                  />
 
                 {/* Title */}
                 <h1
