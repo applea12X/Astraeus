@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from 'react';
-// Temporarily removed framer-motion and Firebase for simplified setup
-// import { motion, AnimatePresence } from 'framer-motion';
-// import { signOut } from 'firebase/auth';
-// import { auth } from '../firebase/config';
-// import AnimatedShaderBackground from '../components/ui/animated-shader-background';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import AnimatedShaderBackground from '../components/ui/animated-shader-background';
 import GalaxyButton from './ui/GalaxyButton';
+import UserProfileDropdown from './ui/UserProfileDropdown';
 
-const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, userProfile }) => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -28,6 +21,18 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
       <div className="fixed inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1, opacity: 0.4 }}>
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20 animate-pulse"></div>
       </div>
+
+      {/* User Profile Dropdown - Top Right */}
+      {user && (
+        <div className="fixed top-6 right-6 z-50">
+          <UserProfileDropdown 
+            user={user}
+            userProfile={userProfile}
+            onViewProfile={onViewProfile}
+            onSettings={() => {}}
+          />
+        </div>
+      )}
 
       {/* Main Content - Fades in automatically */}
       <div
@@ -91,24 +96,19 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, user }) => {
               }}
             >
               {user ? (
-                <div
-                  className="flex flex-col sm:flex-row gap-6 items-center"
-                  style={{
-                    opacity: 1,
-                    transform: 'translateY(0)',
-                    transition: 'all 0.8s ease-out 1s'
-                  }}
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 1 }}
+                  className="flex flex-col items-center gap-6"
                 >
-                  <div className="text-white text-xl mb-4 sm:mb-0">
-                    Welcome, {user.displayName || user.email}!
+                  <div className="text-white text-2xl font-bold">
+                    Welcome back, {userProfile?.firstName || user.displayName || 'Explorer'}!
                   </div>
                   <GalaxyButton onClick={onNavigate} className="min-w-52">
                     Start Journey
                   </GalaxyButton>
-                  <GalaxyButton onClick={() => console.log('Sign out clicked - Firebase not configured')} className="min-w-52">
-                    Sign Out
-                  </GalaxyButton>
-                </div>
+                </motion.div>
               ) : (
                 <>
                   <GalaxyButton onClick={onSignIn} className="min-w-52">

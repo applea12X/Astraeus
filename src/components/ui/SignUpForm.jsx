@@ -11,12 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Sparkles, Chrome } from "lucide-react";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
-import { auth } from "@/firebase/config";
+import { auth, db } from "@/firebase/config";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import AnimatedShaderBackground from "./animated-shader-background";
 
 const AstraeusLogo = (props) => (
   <div className="relative inline-flex items-center justify-center">
-    <Sparkles className="w-16 h-16 text-blue-400 animate-pulse" {...props} />
+    <Sparkles className="w-16 h-16 text-red-600 animate-pulse" {...props} />
   </div>
 );
 
@@ -27,7 +28,9 @@ export default function SignUpForm({ onSignIn }) {
     lastName: "",
     username: "",
     email: "",
-    password: ""
+    password: "",
+    phone: "",
+    address: ""
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -66,6 +69,19 @@ export default function SignUpForm({ onSignIn }) {
         });
       }
 
+      // Save additional user data to Firestore
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        role: formData.role,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
       // User is automatically redirected by App.jsx's onAuthStateChanged
     } catch (error) {
       setError(getErrorMessage(error.code));
@@ -86,7 +102,22 @@ export default function SignUpForm({ onSignIn }) {
 
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      // Save user data to Firestore (Google provides name and email)
+      const nameParts = userCredential.user.displayName?.split(' ') || ['', ''];
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        username: userCredential.user.email?.split('@')[0] || '',
+        email: userCredential.user.email,
+        phone: '',
+        address: '',
+        role: 'explorer',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true }); // merge: true won't overwrite if document exists
+      
       // User is automatically redirected by App.jsx's onAuthStateChanged
     } catch (error) {
       setError(getErrorMessage(error.code));
@@ -200,6 +231,32 @@ export default function SignUpForm({ onSignIn }) {
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/20 focus:border-blue-400/50 transition-all"
                     placeholder="you@astraeus.space"
                     required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-white/90">Phone Number</Label>
+                  <Input 
+                    id="phone" 
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/20 focus:border-blue-400/50 transition-all"
+                    placeholder="+1 (555) 123-4567"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-white/90">Address</Label>
+                  <Input 
+                    id="address" 
+                    type="text"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/20 focus:border-blue-400/50 transition-all"
+                    placeholder="123 Main St, City, State, ZIP"
                     disabled={loading}
                   />
                 </div>

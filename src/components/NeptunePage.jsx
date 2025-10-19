@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from 'react';
-// Temporarily removed framer-motion for simplified setup
-// import { motion } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 
-const NeptunePage = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
+const NeptunePage = ({ onNavigate }) => {
   return (
     <div
       className="fixed inset-0 w-screen h-screen overflow-hidden"
@@ -17,6 +11,17 @@ const NeptunePage = () => {
         transition: 'opacity 1s ease-in-out'
       }}
     >
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => onNavigate && onNavigate('solar-system')}
+        className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="font-semibold">Back to Solar System</span>
+      </motion.button>
       {/* Neptune-themed gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a237e] via-[#283593] to-[#3949ab]">
         {/* Animated stars */}
@@ -122,9 +127,7 @@ const NeptunePage = () => {
             <h1 className="text-7xl font-bold text-white drop-shadow-2xl mb-4">
               Welcome to Neptune
             </h1>
-            <p className="text-2xl text-blue-100 drop-shadow-lg mb-8">
-              The Ice Giant of Finance
-            </p>
+            
             
             {/* Interactive content area */}
             <div
@@ -136,32 +139,44 @@ const NeptunePage = () => {
               }}
             >
               <h2 className="text-3xl font-semibold text-white mb-4">
-                Your Financial Adventure Begins
+                Your Adventure Begins
               </h2>
               <p className="text-lg text-blue-50 leading-relaxed">
-                Neptune represents the deep, mysterious waters of advanced financial planning. 
-                Here you'll learn about long-term investments, retirement planning, and building 
-                lasting wealth for your future.
+                Neptune represents your introduction to the world of Toyota Financial.
+                Here you'll enter your preliminary financial information to get started.
               </p>
               
-              {/* Placeholder for future content */}
+              {/* Financial topics grid */}
               <div className="mt-8 grid grid-cols-3 gap-4">
                 {['Investments', 'Retirement', 'Savings'].map((topic, i) => (
-                  <button
+                  <motion.button
                     key={topic}
-                    className="bg-gradient-to-br from-blue-500 to-blue-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
-                    style={{
-                      transform: 'translateY(0)',
-                      opacity: 1,
-                      transition: `all 0.3s ease-out ${1.5 + i * 0.1}s`
-                    }}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 1.2 + i * 0.1 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-br from-blue-500 to-blue-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
                   >
                     {topic}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
-            </div>
-          </div>
+            </motion.div>
+              {/* Next button */}
+              <motion.button
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 1.8 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavigate && onNavigate('financial-info')}
+                className="mt-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Next →
+              </motion.button>
+            </motion.div>
+          </motion.div>
         </div>
 
         {/* Ambient light effects */}

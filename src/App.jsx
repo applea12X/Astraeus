@@ -1,29 +1,100 @@
 import './App.css';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from './firebase/config';
+import { motion, AnimatePresence } from 'framer-motion';
 import LandingPage from './components/LandingPage';
 import SignInForm from './components/ui/SignInForm';
 import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
+import ProfilePage from './components/ProfilePage';
+import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('landing');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', user ? 'User signed in' : 'No user');
       setUser(user);
+      
+      // Fetch user profile from Firestore with timeout
+      if (user) {
+        // Navigate immediately, then fetch profile in background
+        if (currentPage === 'sign-in' || currentPage === 'sign-up') {
+          console.log('Navigating to landing page...');
+          setCurrentPage('landing');
+        }
+        
+        // Fetch profile data asynchronously (non-blocking)
+        const fetchProfile = async () => {
+          try {
+            console.log('Fetching user profile from Firestore...');
+            const userDoc = await Promise.race([
+              getDoc(doc(db, 'users', user.uid)),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+              )
+            ]);
+            
+            if (userDoc.exists()) {
+              console.log('User profile found:', userDoc.data());
+              setUserProfile(userDoc.data());
+            } else {
+              console.log('No user profile found in Firestore');
+              setUserProfile(null);
+            }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            // Continue without profile data
+            setUserProfile(null);
+          }
+        };
+        
+        fetchProfile();
+      } else {
+        setUserProfile(null);
+        // If user logs out, go back to landing page
+        if (currentPage !== 'landing' && currentPage !== 'sign-in' && currentPage !== 'sign-up') {
+          setCurrentPage('landing');
+        }
+      }
+      
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [currentPage]);
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
+  };
+
+  // Page transition variants
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      x: 300
+    },
+    animate: {
+      opacity: 1,
+      x: 0
+    },
+    exit: {
+      opacity: 1,
+      x: -300
+    }
+  };
+
+  const pageTransition = {
+    type: "tween",
+    ease: [0.4, 0, 0.2, 1],
+    duration: 0.5
   };
 
   if (loading) {
@@ -34,39 +105,64 @@ function App() {
     );
   }
 
-  // Navigation between different pages
-  if (currentPage === 'sign-in') {
-    return (
-      <SignInForm 
-        onSignUp={() => handleNavigate('sign-up')}
-      />
-    );
-  }
+  // Render the current page with transitions
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'sign-in':
+        return (
+          <SignInForm 
+            onSignUp={() => handleNavigate('sign-up')}
+          />
+        );
+      case 'sign-up':
+        return (
+          <SignUpForm 
+            onSignIn={() => handleNavigate('sign-in')}
+          />
+        );
+      case 'solar-system':
+        return <SolarSystem onNavigate={handleNavigate} />;
+      case 'neptune':
+        return <NeptunePage onNavigate={handleNavigate} />;
+      case 'financial-info':
+        return <FinancialInfoPage onNavigate={handleNavigate} />;
+      case 'profile':
+        return (
+          <ProfilePage 
+            user={user}
+            onBack={() => handleNavigate('landing')}
+          />
+        );
+      default:
+        return (
+          <LandingPage 
+            onSignIn={() => handleNavigate('sign-in')}
+            onSignUp={() => handleNavigate('sign-up')}
+            onNavigate={() => handleNavigate('solar-system')}
+            onViewProfile={() => handleNavigate('profile')}
+            user={user}
+            userProfile={userProfile}
+          />
+        );
+    }
+  };
 
-  if (currentPage === 'sign-up') {
-    return (
-      <SignUpForm 
-        onSignIn={() => handleNavigate('sign-in')}
-      />
-    );
-  }
-
-  if (currentPage === 'solar-system') {
-    return <SolarSystem onNavigate={handleNavigate} />;
-  }
-
-  if (currentPage === 'neptune') {
-    return <NeptunePage />;
-  }
-
-  // Landing page (default)
   return (
-    <LandingPage 
-      onSignIn={() => handleNavigate('sign-in')}
-      onSignUp={() => handleNavigate('sign-up')}
-      onNavigate={() => handleNavigate('solar-system')}
-      user={user} 
-    />
+    <div className="relative overflow-hidden min-h-screen bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
+      <AnimatePresence mode="sync" initial={false}>
+        <motion.div
+          key={currentPage}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={pageVariants}
+          transition={pageTransition}
+          className="absolute inset-0 w-full h-full"
+        >
+          {renderCurrentPage()}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 
