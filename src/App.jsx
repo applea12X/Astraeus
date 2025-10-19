@@ -102,26 +102,30 @@ function App() {
     setFinancialInfo(info);
   };
 
-  // Page transition variants
+  // Page transition variants - optimized for smooth performance
   const pageVariants = {
     initial: {
       opacity: 0,
-      x: 300
+      x: 50,
+      scale: 0.98
     },
     animate: {
       opacity: 1,
-      x: 0
+      x: 0,
+      scale: 1
     },
     exit: {
-      opacity: 1,
-      x: -300
+      opacity: 0,
+      x: -50,
+      scale: 0.98
     }
   };
 
   const pageTransition = {
-    type: "tween",
-    ease: [0.4, 0, 0.2, 1],
-    duration: 0.5
+    type: "spring",
+    stiffness: 300,
+    damping: 30,
+    mass: 0.8
   };
 
   if (loading) {
@@ -156,10 +160,11 @@ function App() {
         return <MarsPage onNavigate={handleNavigate} />;
       case 'mars-form':
         return (
-          <MarsFormPage 
-            onNavigate={handleNavigate} 
+          <MarsFormPage
+            onNavigate={handleNavigate}
             financialInfo={financialInfo}
             vehiclePreferences={vehiclePreferences}
+            userProfile={userProfile}
           />
         );
       case 'payment-simulations':
@@ -234,7 +239,7 @@ function App() {
 
   return (
     <div className="relative overflow-hidden min-h-screen bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
-      <AnimatePresence mode="sync" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={currentPage}
           initial="initial"
@@ -243,6 +248,7 @@ function App() {
           variants={pageVariants}
           transition={pageTransition}
           className="absolute inset-0 w-full h-full"
+          style={{ willChange: 'transform, opacity' }}
         >
           {renderCurrentPage()}
         </motion.div>

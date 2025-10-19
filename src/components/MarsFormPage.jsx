@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CreditCard, Car, DollarSign, TrendingUp, Calendar, Wallet } from 'lucide-react';
+import { auth } from '../firebase/config';
+import { getUserProgress } from '../utils/userProgress';
 
-const MarsFormPage = ({ onNavigate, financialInfo, vehiclePreferences }) => {
+const MarsFormPage = ({ onNavigate, financialInfo, vehiclePreferences, userProfile }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     vehiclePrice: '',
     downPayment: '',
@@ -12,6 +15,41 @@ const MarsFormPage = ({ onNavigate, financialInfo, vehiclePreferences }) => {
     monthlyBudget: '',
     expectedMileage: ''
   });
+
+  // Fetch saved payment plan from Firebase
+  useEffect(() => {
+    const loadPaymentPlan = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const progress = await getUserProgress(user.uid);
+
+          // Map Jupiter payment plan to Mars payment method
+          // 'cash' -> 'lump-sum', 'finance' -> 'finance', 'lease' -> 'lease'
+          if (progress.paymentPlan) {
+            const paymentMethodMap = {
+              'cash': 'lump-sum',
+              'finance': 'finance',
+              'lease': 'lease'
+            };
+
+            const mappedPaymentMethod = paymentMethodMap[progress.paymentPlan] || '';
+
+            setFormData(prev => ({
+              ...prev,
+              paymentMethod: mappedPaymentMethod
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading payment plan:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPaymentPlan();
+  }, []);
 
   const steps = [
     {
@@ -33,6 +71,8 @@ const MarsFormPage = ({ onNavigate, financialInfo, vehiclePreferences }) => {
       label: 'How would you prefer to pay?',
       type: 'cards',
       icon: <CreditCard className="h-8 w-8" />,
+      // Only show this step if payment method wasn't loaded from Firebase
+      show: !formData.paymentMethod || formData.paymentMethod === '',
       options: [
         {
           value: 'finance',
@@ -207,6 +247,22 @@ const MarsFormPage = ({ onNavigate, financialInfo, vehiclePreferences }) => {
       </div>
     );
   };
+
+  // Show loading state while fetching payment plan
+  if (isLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-[#8B2500] via-[#A0522D] to-[#CD853F] flex items-center justify-center"
+      >
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-xl">Loading your payment preferences...</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
