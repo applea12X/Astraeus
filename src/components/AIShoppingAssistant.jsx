@@ -14,7 +14,6 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import RedAlienLogo from './ui/RedAlienLogo';
 
 const AIShoppingAssistant = ({ selectedVehicle, financialInfo, userProfile }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -296,21 +295,20 @@ Respond conversationally and include specific next steps. If recommending a webs
 
   return (
     <>
-      {/* Floating Red Alien Button */}
+      {/* Floating Alien Button */}
       <motion.button
-        initial={{ scale: 0, opacity: 0, rotate: -20 }}
+        initial={{ scale: 0, rotate: -180 }}
         animate={{ 
           scale: 1, 
-          opacity: 1, 
           rotate: 0,
-          y: [0, -10, 0]
+          y: [0, -8, 0]
         }}
         transition={{ 
-          delay: 0.5, 
+          delay: 0.3, 
           type: 'spring',
           y: {
             repeat: Infinity,
-            duration: 2,
+            duration: 2.5,
             ease: "easeInOut"
           }
         }}
@@ -318,30 +316,49 @@ Respond conversationally and include specific next steps. If recommending a webs
           console.log('🤖 AI Assistant clicked!');
           setIsOpen(true);
         }}
-        className="fixed bottom-8 right-8 z-[9999] w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 group cursor-pointer"
-        style={{ 
-          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%)',
-          boxShadow: '0 8px 32px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.3)',
-          backdropFilter: 'blur(10px)'
-        }}
-        whileHover={{ 
-          scale: 1.15,
-          rotate: [0, -10, 10, -10, 0],
-          transition: { duration: 0.5 }
-        }}
-        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-6 right-6 z-[9999] cursor-pointer"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
       >
-        <div className="group-hover:scale-110 transition-transform duration-300">
-          <RedAlienLogo size={64} />
+        {/* Main avatar body - matches AvatarGuide from solar system */}
+        <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full shadow-lg flex items-center justify-center relative overflow-hidden">
+          {/* Cute face */}
+          <div className="relative">
+            {/* Eyes */}
+            <div className="flex gap-2 mb-1">
+              <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-black rounded-full"></div>
+              </div>
+              <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-black rounded-full"></div>
+              </div>
+            </div>
+            
+            {/* Mouth */}
+            <div className="w-4 h-2 border-2 border-white border-t-0 rounded-b-full"></div>
+          </div>
+
+          {/* Antennae */}
+          <div className="absolute -top-2 left-3">
+            <div className="w-0.5 h-4 bg-red-300"></div>
+            <div className="w-2 h-2 bg-white rounded-full -mt-1 ml-[-3px] shadow-sm"></div>
+          </div>
+          <div className="absolute -top-2 right-3">
+            <div className="w-0.5 h-4 bg-red-300"></div>
+            <div className="w-2 h-2 bg-white rounded-full -mt-1 ml-[-3px] shadow-sm"></div>
+          </div>
+
+          {/* Shine effect */}
+          <div className="absolute top-1 left-2 w-4 h-4 bg-white/30 rounded-full blur-sm"></div>
         </div>
-        {/* Active indicator */}
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white shadow-lg" style={{
-          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-        }} />
-        {/* Glow ring */}
-        <div className="absolute inset-0 rounded-full border-2 border-red-400/30 animate-ping" style={{
-          animationDuration: '3s'
-        }} />
+
+        {/* Notification badge */}
+        {!isOpen && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
+        )}
+
+        {/* Glow effect */}
+        <div className="absolute inset-0 rounded-full bg-red-400/20 blur-xl -z-10 scale-150"></div>
       </motion.button>
 
       {/* Assistant Panel */}
