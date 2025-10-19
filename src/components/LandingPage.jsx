@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedShaderBackground from '../components/ui/animated-shader-background';
 import GalaxyButton from './ui/GalaxyButton';
 import UserProfileDropdown from './ui/UserProfileDropdown';
 
 const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, userProfile }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -17,9 +22,9 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
         }}
       />
       
-      {/* Animated Shader Overlay for shooting stars effect */}
+      {/* Simple animated background overlay */}
       <div className="fixed inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1, opacity: 0.4 }}>
-        <AnimatedShaderBackground />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20 animate-pulse"></div>
       </div>
 
       {/* User Profile Dropdown - Top Right */}
@@ -35,21 +40,23 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
       )}
 
       {/* Main Content - Fades in automatically */}
-      <AnimatePresence>
-        {true && (
-          <motion.div
-            className="relative flex flex-col items-center justify-center h-full px-4"
-            style={{ zIndex: 10 }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
+      <div
+        className="relative flex flex-col items-center justify-center h-full px-4"
+        style={{ 
+          zIndex: 10,
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(0.8)',
+          transition: 'all 1s ease-out'
+        }}
+      >
             {/* Toyota Logo */}
-            <motion.div
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+            <div
               className="mb-12 -mt-24"
+              style={{
+                opacity: 1,
+                transform: 'translateY(0)',
+                transition: 'all 0.8s ease-out 0.3s'
+              }}
             >
               <div className="flex flex-col items-center gap-6">
                 {/* Toyota Logo Image */}
@@ -62,32 +69,36 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
                 </div>
 
                 {/* Title */}
-                <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
+                <h1
                   className="text-5xl md:text-6xl font-bold text-white text-center drop-shadow-2xl"
+                  style={{
+                    opacity: 1,
+                    transition: 'opacity 0.8s ease-out 0.6s'
+                  }}
                 >
                   Toyota Financial
-                </motion.h1>
+                </h1>
                 
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.8 }}
+                <p
                   className="text-xl md:text-2xl text-blue-100 text-center drop-shadow-lg"
+                  style={{
+                    opacity: 1,
+                    transition: 'opacity 0.8s ease-out 0.8s'
+                  }}
                 >
 
-                </motion.p>
+                </p>
               </div>
-            </motion.div>
+            </div>
 
             {/* Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1 }}
+            <div
               className="flex flex-col sm:flex-row gap-6 mb-10"
+              style={{
+                opacity: 1,
+                transform: 'translateY(0)',
+                transition: 'all 0.8s ease-out 1s'
+              }}
             >
               {user ? (
                 <motion.div
@@ -112,27 +123,22 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
                   <GalaxyButton onClick={onSignUp} className="min-w-52">
                     Sign Up
                   </GalaxyButton>
-
-                  <GalaxyButton onClick={onNavigate} className="min-w-52">
-                    Start Journey
-                  </GalaxyButton>
                 </>
               )}
-            </motion.div>
+            </div>
 
             {/* Tagline */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
+            <p
               className="text-blue-200 text-center max-w-2xl text-base px-10 pt-50"
+              style={{
+                opacity: 1,
+                transition: 'opacity 0.8s ease-out 1.2s'
+              }}
             >
               <br />
               Go on a space journey to find your next Toyota car!
-            </motion.p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </p>
+          </div>
 
       {/* Ambient light effects */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
