@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Rocket } from 'lucide-react';
+import Confetti from 'react-confetti';
 import sunImage from '../assets/sun.png';
 import mercuryImage from '../assets/mercury.png';
 import venusImage from '../assets/venus.png';
@@ -24,6 +25,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [landedPlanet, setLandedPlanet] = useState(null);
   const [animationInProgress, setAnimationInProgress] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const scrollContainerRef = useRef(null);
   const neptuneRef = useRef(null);
   const uranusRef = useRef(null);
@@ -33,6 +35,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const earthRef = useRef(null);
   const animationStartedRef = useRef(false);
   const lastFlightRef = useRef(null);
+  const celebrationTriggeredRef = useRef(false);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -131,7 +134,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           try {
             const progress = await getUserProgress(user.uid);
             setUserProgress(progress);
-            
+
             // Update landed planet
             let landed = null;
             if (progress.journeyStarted) {
@@ -151,6 +154,21 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
     };
 
     reloadProgressIfNeeded();
+  }, [navPayload]);
+
+  // Trigger celebration when returning from Earth with celebration payload
+  useEffect(() => {
+    if (navPayload?.celebration && !celebrationTriggeredRef.current) {
+      celebrationTriggeredRef.current = true;
+
+      // Start confetti immediately
+      setShowCelebration(true);
+
+      // Stop confetti after 10 seconds
+      setTimeout(() => {
+        setShowCelebration(false);
+      }, 10000);
+    }
   }, [navPayload]);
 
   const handlePlanetClick = async (planetName) => {
@@ -667,13 +685,25 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           onAnimationComplete={spaceshipEndPos ? handleTransferComplete : handleAnimationComplete}
         />
       )}
-      
+
+      {/* Celebration Confetti */}
+      {showCelebration && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          numberOfPieces={500}
+          recycle={true}
+          colors={['#ff0000', '#cc0000', '#ffffff', '#ff6b6b', '#ffd700', '#ff1493']}
+          gravity={0.3}
+        />
+      )}
+
       {/* AI Shopping Assistant */}
-      <AIShoppingAssistant 
-        selectedVehicle={null} 
-        financialInfo={{}} 
-        userProfile={userProfile} 
-        currentPageName="solar-system" 
+      <AIShoppingAssistant
+        selectedVehicle={null}
+        financialInfo={{}}
+        userProfile={userProfile}
+        currentPageName="solar-system"
       />
     </div>
   );
