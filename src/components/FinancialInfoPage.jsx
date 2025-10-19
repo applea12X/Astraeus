@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, Clock, User, GraduationCap, Home, Coffee, ArrowLeft, TrendingUp, TrendingDown, Minus, Star, Target, Car, Building, Calendar, DollarSign } from 'lucide-react';
 import { IconGrid } from './ui/icon-set';
 import { auth, db } from '../firebase/config';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 
 const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     employmentStatus: '',
     occupation: '',
@@ -17,6 +18,42 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
     financialGoal: '',
     paymentFrequency: ''
   });
+
+  // Load existing financial data when component mounts
+  useEffect(() => {
+    const loadExistingData = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const financialDoc = await getDoc(doc(db, 'financial_profiles', user.uid));
+        if (financialDoc.exists()) {
+          const existingData = financialDoc.data();
+          console.log('Loading existing financial data:', existingData);
+          
+          // Update form data with existing values
+          setFormData({
+            employmentStatus: existingData.employmentStatus || '',
+            occupation: existingData.occupation || '',
+            employerName: existingData.employerName || '',
+            annualIncome: existingData.annualIncome || '',
+            creditScore: existingData.creditScore || '',
+            financialGoal: existingData.financialGoal || '',
+            paymentFrequency: existingData.paymentFrequency || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error loading existing financial data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExistingData();
+  }, []);
 
   const steps = [
     {
@@ -277,6 +314,18 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
   };
 
   const currentStepData = steps[currentStep];
+
+  // Show loading state while fetching existing data
+  if (loading) {
+    return (
+      <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-white/70 text-lg">Loading your financial information...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div

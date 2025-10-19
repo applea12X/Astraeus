@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Car, Users, DollarSign, Zap, Target, Info } from 'lucide-react';
 import { auth, db } from '../firebase/config';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { calculateRecommendedCarPrice, formatCurrency, getBudgetRecommendationMessage } from '../utils/financialCalculations';
 
 const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     budget: '',
     vehicleType: '',
@@ -15,6 +16,45 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
     primaryUse: '',
     fuelType: ''
   });
+
+  // Load existing vehicle preferences when component mounts
+  useEffect(() => {
+    const loadExistingData = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Check user document for vehicle preferences
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const existingPreferences = userData.vehiclePreferences;
+          
+          if (existingPreferences) {
+            console.log('Loading existing vehicle preferences:', existingPreferences);
+            
+            // Update form data with existing values
+            setFormData({
+              budget: existingPreferences.budget || '',
+              vehicleType: existingPreferences.vehicleType || '',
+              familySize: existingPreferences.familySize || '',
+              primaryUse: existingPreferences.primaryUse || '',
+              fuelType: existingPreferences.fuelType || ''
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading existing vehicle preferences:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExistingData();
+  }, []);
 
   // Calculate recommended price range based on financial info
   const priceCalculation = useMemo(() => {
@@ -182,9 +222,14 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
           onSubmitPreferences(formData);
         }
         
-        // Navigate to Saturn intro
+        // Navigate to solar system with flight animation from Uranus to Saturn
         if (onNavigate) {
-          onNavigate('saturn');
+          onNavigate('solar-system', { 
+            flight: { 
+              from: 'uranus', 
+              to: 'saturn' 
+            } 
+          });
         }
       } else {
         alert('Failed to save vehicle preferences. Please try again.');
@@ -204,6 +249,18 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
   };
 
   const currentStepData = steps[currentStep];
+
+  // Show loading state while fetching existing data
+  if (loading) {
+    return (
+      <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-[#0a1929] via-[#1e3a5f] to-[#0f1d2e] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p className="text-white/70 text-lg">Loading your vehicle preferences...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div

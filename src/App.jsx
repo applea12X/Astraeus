@@ -146,7 +146,7 @@ function App() {
           />
         );
       case 'solar-system':
-        return <SolarSystem onNavigate={handleNavigate} navPayload={navPayload} />;
+        return <SolarSystem onNavigate={handleNavigate} navPayload={navPayload} userProfile={userProfile} />;
       case 'neptune':
         console.log('Navigating to Neptune page...');
         return <NeptunePage onNavigate={handleNavigate} />;
