@@ -371,7 +371,7 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
       </div>
 
       {/* Title */}
-      <div className="fixed top-10 left-10 z-30 ml-48">
+      <div className="fixed top-10 left-0 right-0 z-30 text-center">
         <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-2">Financial Information</h1>
         <p className="text-xl text-blue-200">Tell us about your financial situation</p>
         <div className="mt-4 text-white/60">
@@ -380,7 +380,7 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 h-full flex items-center justify-center p-8">
+      <div className="relative z-10 h-full flex items-center justify-center p-8 pt-40">
         <div className="w-full max-w-2xl">
           <AnimatePresence mode="wait">
             <motion.div

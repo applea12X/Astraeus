@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ChevronDown, ChevronUp, Check, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 import AnimatedShaderBackground from './ui/animated-shader-background';
+import { auth } from '../firebase/config';
+import { updateUserProgress } from '../utils/userProgress';
 
 const PaymentOption = ({ title, description, details, Icon, isSelected, onSelect, onToggleDetails }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -134,6 +136,28 @@ const JupiterPaymentPage = ({ onNavigate, financialInfo, selectedVehicle }) => {
     setExpandedCard(expandedCard === planId ? null : planId);
   };
 
+  const handleContinue = async () => {
+    if (!selectedPlan) return;
+
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        // Mark Jupiter as completed and save payment plan selection
+        await updateUserProgress(user.uid, 'jupiter', {
+          paymentPlan: selectedPlan,
+          paymentPlanSelectedAt: new Date().toISOString()
+        });
+      }
+
+      // Trigger spaceship animation to Mars
+      onNavigate('solar-system', { flight: { from: 'jupiter', to: 'mars' } });
+    } catch (error) {
+      console.error('Error updating progress:', error);
+      // Still navigate even if progress update fails
+      onNavigate('solar-system', { flight: { from: 'jupiter', to: 'mars' } });
+    }
+  };
+
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-auto">
       {/* Animated Background */}
@@ -208,7 +232,7 @@ const JupiterPaymentPage = ({ onNavigate, financialInfo, selectedVehicle }) => {
           className="fixed bottom-8 left-0 right-0 flex justify-center"
         >
           <Button
-            onClick={() => onNavigate('saturn')}
+            onClick={handleContinue}
             disabled={!selectedPlan}
             className={`px-20 py-6 text-xl font-bold rounded-2xl transition-all duration-300 ${
               selectedPlan

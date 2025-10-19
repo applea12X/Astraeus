@@ -848,9 +848,9 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                   const saved = await saveVehicleSelection(selectedVehicle);
                   
                   if (saved) {
-                    // Navigate to Solar System with flight animation to Jupiter
+                    // Navigate to Jupiter Purchase Plan
                     if (onNavigate) {
-                      onNavigate('solar-system', { 
+                      onNavigate('jupiter-plan', { 
                         flight: { 
                           from: 'saturn', 
                           to: 'jupiter' 

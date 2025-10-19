@@ -17,6 +17,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [landedPlanet, setLandedPlanet] = useState(null);
   const [animationInProgress, setAnimationInProgress] = useState(false);
+  const scrollContainerRef = useRef(null);
   const neptuneRef = useRef(null);
   const uranusRef = useRef(null);
   const saturnRef = useRef(null);
@@ -35,11 +36,34 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
     { id: 7, name: 'Uranus', size: 100, color: '#4FD0E0' },
     { id: 8, name: 'Neptune', size: 95, color: '#4166F5' }
   ];
-  const planets = basePlanets.map((p, i) => ({ 
-    ...p, 
-    distance: startOffsetPx + i * spacingPx 
+  const planets = basePlanets.map((p, i) => ({
+    ...p,
+    distance: startOffsetPx + i * spacingPx
   }));
-  
+
+  // Helper function to get ref for a planet
+  const getPlanetRef = (planetId) => {
+    switch(planetId) {
+      case 8: return neptuneRef;
+      case 7: return uranusRef;
+      case 6: return saturnRef;
+      case 5: return jupiterRef;
+      case 4: return marsRef;
+      default: return null;
+    }
+  };
+
+  // Get a stable visual center based on the planet image (ignores glow/rings)
+  const getPlanetImageCenter = (planetRef) => {
+    if (!planetRef?.current) return null;
+    const img = planetRef.current.querySelector('img');
+    const target = img || planetRef.current;
+    const rect = target.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  };
 
   // Load user progress on component mount
   useEffect(() => {
@@ -94,11 +118,10 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
         setUserProgress(updatedProgress);
       }
       
-      const rect = neptuneRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      const nCenter = getPlanetImageCenter(neptuneRef);
+      if (!nCenter) return;
       setAnimationInProgress(true);
-      setSpaceshipStartPos({ x: centerX, y: centerY });
+      setSpaceshipStartPos({ x: nCenter.x, y: nCenter.y });
       setSpaceshipEndPos(null);
       setShowSpaceship(true);
     } else if (planetName === 'Uranus') {
@@ -163,18 +186,16 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           };
         } else {
           // Fallback to planet center if no landed spaceship found
-          const nRect = neptuneRef.current.getBoundingClientRect();
+          const nCenter = getPlanetImageCenter(neptuneRef);
+          if (!nCenter) return;
           spaceshipStartPosition = { 
-            x: nRect.left + nRect.width / 2, 
-            y: nRect.top + nRect.height / 2 - 40 // Approximate offset for spaceship position
+            x: nCenter.x, 
+            y: nCenter.y - 40 // Approximate offset for spaceship position
           };
         }
         
-        const uRect = uranusRef.current.getBoundingClientRect();
-        const uranusCenter = { 
-          x: uRect.left + uRect.width / 2, 
-          y: uRect.top + uRect.height / 2 
-        };
+        const uranusCenter = getPlanetImageCenter(uranusRef);
+        if (!uranusCenter) return;
         
         console.log('Spaceship start position:', spaceshipStartPosition, 'Uranus center:', uranusCenter);
         
@@ -193,41 +214,58 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
     } else if (flight.from === 'uranus' && flight.to === 'saturn') {
       // Uranus to Saturn transfer animation
       const computeAndStart = () => {
-        if (!uranusRef.current || !saturnRef.current) return;
-        
-        // Try to get the landed spaceship position first
-        const landedSpaceshipElement = document.getElementById('landed-spaceship-uranus');
-        let spaceshipStartPosition;
-        
-        if (landedSpaceshipElement) {
-          const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
-          spaceshipStartPosition = {
-            x: spaceshipRect.left + spaceshipRect.width / 2,
-            y: spaceshipRect.top + spaceshipRect.height / 2
-          };
-        } else {
-          // Fallback to planet center if no landed spaceship found
-          const uRect = uranusRef.current.getBoundingClientRect();
-          spaceshipStartPosition = { 
-            x: uRect.left + uRect.width / 2, 
-            y: uRect.top + uRect.height / 2 - 40 // Approximate offset for spaceship position
-          };
+        if (!uranusRef.current || !saturnRef.current) {
+          console.error('Refs not ready - uranusRef:', uranusRef.current, 'saturnRef:', saturnRef.current);
+          return;
         }
-        
-        const sRect = saturnRef.current.getBoundingClientRect();
-        const saturnCenter = { 
-          x: sRect.left + sRect.width / 2, 
-          y: sRect.top + sRect.height / 2 
-        };
-        
-        console.log('Uranus to Saturn - Spaceship start position:', spaceshipStartPosition, 'Saturn center:', saturnCenter);
-        
-        setAnimationInProgress(true);
-        setSpaceshipStartPos(spaceshipStartPosition);
-        setSpaceshipEndPos(saturnCenter);
-        setShowSpaceship(true);
+
+        // Scroll to ensure both planets are visible
+        // Saturn is closer to the sun (to the right), so scroll to show it
+        saturnRef.current.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+
+        // Debug: log the planet names and positions to verify refs are pointing to correct elements
+        console.log('Uranus ref planet name:', uranusRef.current.querySelector('img')?.alt);
+        console.log('Uranus parent right style:', uranusRef.current.parentElement?.style.right);
+        console.log('Saturn ref planet name:', saturnRef.current.querySelector('img')?.alt);
+        console.log('Saturn parent right style:', saturnRef.current.parentElement?.style.right);
+        console.log('Jupiter ref planet name:', jupiterRef.current?.querySelector('img')?.alt);
+        console.log('Jupiter parent right style:', jupiterRef.current?.parentElement?.style.right);
+
+        // Wait a tick for scroll to complete before calculating positions
+        requestAnimationFrame(() => {
+          // Try to get the landed spaceship position first
+          const landedSpaceshipElement = document.getElementById('landed-spaceship-uranus');
+          let spaceshipStartPosition;
+
+          if (landedSpaceshipElement) {
+            const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
+            spaceshipStartPosition = {
+              x: spaceshipRect.left + spaceshipRect.width / 2,
+              y: spaceshipRect.top + spaceshipRect.height / 2
+            };
+          } else {
+            // Fallback to planet center if no landed spaceship found
+            const uCenter = getPlanetImageCenter(uranusRef);
+            if (!uCenter) return;
+            spaceshipStartPosition = {
+              x: uCenter.x,
+              y: uCenter.y - 40 // Approximate offset for spaceship position
+            };
+          }
+
+          const saturnCenter = getPlanetImageCenter(saturnRef);
+          if (!saturnCenter) return;
+
+          console.log('Uranus to Saturn - Spaceship start position:', spaceshipStartPosition, 'Saturn center:', saturnCenter);
+          console.log('Saturn ref bounding rect (via img):', saturnCenter);
+
+          setAnimationInProgress(true);
+          setSpaceshipStartPos(spaceshipStartPosition);
+          setSpaceshipEndPos(saturnCenter);
+          setShowSpaceship(true);
+        });
       };
-      
+
       // Give more time for layout to settle
       setTimeout(() => {
         requestAnimationFrame(() => {
@@ -251,18 +289,16 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           };
         } else {
           // Fallback to planet center if no landed spaceship found
-          const sRect = saturnRef.current.getBoundingClientRect();
+          const sCenter = getPlanetImageCenter(saturnRef);
+          if (!sCenter) return;
           spaceshipStartPosition = { 
-            x: sRect.left + sRect.width / 2, 
-            y: sRect.top + sRect.height / 2 - 40 // Approximate offset for spaceship position
+            x: sCenter.x, 
+            y: sCenter.y - 40 // Approximate offset for spaceship position
           };
         }
         
-        const jRect = jupiterRef.current.getBoundingClientRect();
-        const jupiterCenter = { 
-          x: jRect.left + jRect.width / 2, 
-          y: jRect.top + jRect.height / 2 
-        };
+        const jupiterCenter = getPlanetImageCenter(jupiterRef);
+        if (!jupiterCenter) return;
         
         console.log('Saturn to Jupiter - Spaceship start position:', spaceshipStartPosition, 'Jupiter center:', jupiterCenter);
         
@@ -295,18 +331,16 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           };
         } else {
           // Fallback to planet center if no landed spaceship found
-          const jRect = jupiterRef.current.getBoundingClientRect();
+          const jCenter = getPlanetImageCenter(jupiterRef);
+          if (!jCenter) return;
           spaceshipStartPosition = { 
-            x: jRect.left + jRect.width / 2, 
-            y: jRect.top + jRect.height / 2 - 40 // Approximate offset for spaceship position
+            x: jCenter.x, 
+            y: jCenter.y - 40 // Approximate offset for spaceship position
           };
         }
         
-        const mRect = marsRef.current.getBoundingClientRect();
-        const marsCenter = { 
-          x: mRect.left + mRect.width / 2, 
-          y: mRect.top + mRect.height / 2 
-        };
+        const marsCenter = getPlanetImageCenter(marsRef);
+        if (!marsCenter) return;
         
         console.log('Jupiter to Mars - Spaceship start position:', spaceshipStartPosition, 'Mars center:', marsCenter);
         
@@ -379,9 +413,9 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
        <div className="relative h-full flex items-center justify-center" style={{ width: '1750px', paddingLeft: '120px' }}> 
        {planets.map((planet, index) => ( <div key={planet.id} className="absolute" style={{
         right: `${planet.distance}px` }} > 
-        {/* Planet */} 
-        <div 
-          ref={planet.id === 8 ? neptuneRef : planet.id === 7 ? uranusRef : planet.id === 6 ? saturnRef : planet.id === 5 ? jupiterRef : planet.id === 4 ? marsRef : null}
+        {/* Planet */}
+        <div
+          ref={getPlanetRef(planet.id)}
           onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : planet.id === 5 ? () => handlePlanetClick('Jupiter') : planet.id === 4 ? () => handlePlanetClick('Mars') : undefined}
           className={`relative rounded-full shadow-2xl ${
             (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) ? 
@@ -516,7 +550,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       </div>
 
       {/* Title (static) */}
-      <div className="fixed top-10 left-10 z-30">
+      <div className="fixed top-10 left-1/2 transform -translate-x-1/2 z-30 text-center">
         <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-2">Your Financial Journey</h1>
         <p className="text-xl text-blue-200">Choose a planet to begin your adventure</p>
       </div>
@@ -524,41 +558,6 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       {/* Ambient light effects (static) */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-      
-      {/* Next Planet Suggestion Button */}
-      {!loadingProgress && userProgress && userProgress.journeyStarted && (
-        (() => {
-          const suggestion = getNextSuggestion(userProgress);
-          return suggestion.action !== 'stay' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="fixed bottom-24 right-6 z-40"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (suggestion.planet) {
-                    const planetRoutes = {
-                      neptune: 'neptune',
-                      uranus: 'uranus', 
-                      saturn: 'saturn',
-                      mars: 'mars',
-                      jupiter: 'jupiter'
-                    };
-                    onNavigate(planetRoutes[suggestion.planet]);
-                  }
-                }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 font-semibold"
-              >
-                <span>{suggestion.title}</span>
-                <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </motion.div>
-          );
-        })()
-      )}
 
       {/* Avatar Guide */}
       {!loadingProgress && (
@@ -567,7 +566,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           userName={userProfile?.firstName || 'Friend'}
           position="bottom-right"
           autoShow={true}
-          persistent={false}
+          persistent={true}
         />
       )}
 
