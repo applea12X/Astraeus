@@ -10,7 +10,6 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
   const [spaceshipEndPos, setSpaceshipEndPos] = useState(null);
   const [hasPlayedTransfer, setHasPlayedTransfer] = useState(false);
   const neptuneRef = useRef(null);
-  const uranusRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -30,15 +29,18 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
   }));
   
 
-  const handleNeptuneClick = (e) => {
-    if (neptuneRef.current) {
+  const handlePlanetClick = (planetName) => {
+    if (planetName === 'Neptune' && neptuneRef.current) {
       const rect = neptuneRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      
       setSpaceshipStartPos({ x: centerX, y: centerY });
       setSpaceshipEndPos(null);
       setShowSpaceship(true);
+    } else if (planetName === 'Uranus') {
+      onNavigate('uranus');
+    } else if (planetName === 'Saturn') {
+      onNavigate('saturn');
     }
   };
 
@@ -152,7 +154,7 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
         right: `${planet.distance}px` }} > 
         {/* Planet */} 
         <div 
-          ref={planet.id === 8 ? neptuneRef : planet.id === 7 ? uranusRef : null}
+          ref={planet.id === 8 ? neptuneRef : null}
           onClick={planet.id === 8 ? handleNeptuneClick : undefined}
           className={`relative rounded-full shadow-2xl ${planet.id === 8 ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >

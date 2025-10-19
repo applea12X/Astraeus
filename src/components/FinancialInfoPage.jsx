@@ -5,7 +5,7 @@ import { IconGrid } from './ui/icon-set';
 import { auth, db } from '../firebase/config';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 
-const FinancialInfoPage = ({ onNavigate }) => {
+const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -245,17 +245,23 @@ const FinancialInfoPage = ({ onNavigate }) => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Handle form submission - save to Firebase
-      const success = await saveFinancialInfo();
-      if (success) {
-        console.log('Financial info submitted and saved:', formData);
-        // Navigate back to solar system and trigger Neptune → Uranus flight
-        onNavigate && onNavigate('solar-system', {
-          flight: { from: 'neptune', to: 'uranus' }
-        });
+      // Handle form submission - save to Firestore and navigate
+      console.log('Financial info submitted:', formData);
+      
+      const saved = await saveFinancialInfo();
+      
+      if (saved) {
+        // Pass data to parent component
+        if (onSubmitFinancialInfo) {
+          onSubmitFinancialInfo(formData);
+        }
+        
+        // Navigate back to solar system to continue journey
+        if (onNavigate) {
+          onNavigate('solar-system');
+        }
       } else {
-        // Handle error - maybe show error message to user
-        alert('There was an error saving your information. Please try again.');
+        alert('Failed to save financial information. Please try again.');
       }
     }
   };
@@ -361,6 +367,22 @@ const FinancialInfoPage = ({ onNavigate }) => {
                     onItemClick={(item) => handleInputChange(currentStepData.field, item.value)}
                     className="max-w-2xl mx-auto"
                   />
+                ) : currentStepData.type === 'select' ? (
+                  <div className="space-y-4">
+                    {currentStepData.options.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleInputChange(currentStepData.field, option.value)}
+                        className={`w-full px-6 py-5 rounded-2xl text-lg font-semibold transition-all ${
+                          formData[currentStepData.field] === option.value
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl scale-105'
+                            : 'bg-white/15 text-white/90 hover:bg-white/25 border border-white/30'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 ) : (
                   <div className="flex justify-center">
                     <div className="relative w-3/4">

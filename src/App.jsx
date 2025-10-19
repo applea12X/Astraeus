@@ -10,6 +10,10 @@ import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
 import ProfilePage from './components/ProfilePage';
+import UranusPage from './components/UranusPage';
+import UranusFormPage from './components/UranusFormPage';
+import SaturnPage from './components/SaturnPage';
+import SaturnResultsPage from './components/SaturnResultsPage';
 import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
@@ -17,6 +21,8 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('landing');
+  const [vehiclePreferences, setVehiclePreferences] = useState(null);
+  const [financialInfo, setFinancialInfo] = useState(null);
   const [navPayload, setNavPayload] = useState(null);
 
   useEffect(() => {
@@ -77,6 +83,14 @@ function App() {
     setCurrentPage(page);
   };
 
+  const handleSubmitPreferences = (preferences) => {
+    setVehiclePreferences(preferences);
+  };
+
+  const handleSubmitFinancialInfo = (info) => {
+    setFinancialInfo(info);
+  };
+
   // Page transition variants
   const pageVariants = {
     initial: {
@@ -127,12 +141,32 @@ function App() {
       case 'neptune':
         return <NeptunePage onNavigate={handleNavigate} />;
       case 'financial-info':
-        return <FinancialInfoPage onNavigate={handleNavigate} />;
+        return <FinancialInfoPage onNavigate={handleNavigate} onSubmitFinancialInfo={handleSubmitFinancialInfo} />;
       case 'profile':
         return (
           <ProfilePage 
             user={user}
             onBack={() => handleNavigate('landing')}
+          />
+        );
+      case 'uranus':
+        return <UranusPage onNavigate={handleNavigate} />;
+      case 'uranus-form':
+        return (
+          <UranusFormPage 
+            onNavigate={handleNavigate} 
+            onSubmitPreferences={handleSubmitPreferences}
+          />
+        );
+      case 'saturn':
+        return <SaturnPage onNavigate={handleNavigate} />;
+      case 'saturn-results':
+        return (
+          <SaturnResultsPage 
+            onNavigate={handleNavigate}
+            preferences={vehiclePreferences}
+            financialInfo={financialInfo}
+            userProfile={userProfile}
           />
         );
       default:
