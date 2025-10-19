@@ -7,7 +7,6 @@ import { db, auth } from '../firebase/config';
 import AnimatedShaderBackground from './ui/animated-shader-background';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import AIShoppingAssistant from './AIShoppingAssistant';
 import { Label } from './ui/label';
 
 const ProfilePage = ({ user, onBack }) => {
@@ -350,14 +349,6 @@ const ProfilePage = ({ user, onBack }) => {
           </div>
         </motion.div>
       </div>
-      
-      {/* AI Shopping Assistant */}
-      <AIShoppingAssistant 
-        selectedVehicle={null} 
-        financialInfo={{}} 
-        userProfile={profileData} 
-        currentPageName="profile" 
-      />
     </div>
   );
 };
