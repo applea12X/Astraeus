@@ -21,6 +21,7 @@ import JupiterPage from './components/JupiterPage';
 import JupiterPaymentPage from './components/JupiterPaymentPage';
 import JupiterPurchasePlan from './components/JupiterPurchasePlan';
 import FinancialInfoPage from './components/FinancialInfoPage';
+import AIShoppingAssistant from './components/AIShoppingAssistant';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -263,6 +264,16 @@ function App() {
           {renderCurrentPage()}
         </motion.div>
       </AnimatePresence>
+
+      {/* Global AI Shopping Assistant - appears on all pages */}
+      <AIShoppingAssistant
+        selectedVehicle={selectedVehicle}
+        financialInfo={financialInfo}
+        userProfile={userProfile}
+        pageContext={{
+          vehiclePreferences: vehiclePreferences
+        }}
+      />
     </div>
   );
 }
