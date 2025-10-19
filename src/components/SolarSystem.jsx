@@ -2,6 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Rocket } from 'lucide-react';
 import sunImage from '../assets/sun.png';
+import mercuryImage from '../assets/mercury.png';
+import venusImage from '../assets/venus.png';
+import earthImage from '../assets/earth.png';
+import marsImage from '../assets/mars.png';
+import jupiterImage from '../assets/jupiter.png';
+import saturnImage from '../assets/saturn.png';
+import uranusImage from '../assets/uranus.png';
+import neptuneImage from '../assets/neptune.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 import AvatarGuide from './ui/AvatarGuide';
 import { getUserProgress, getGuideMessage, startUserJourney, canAccessPlanet, PLANET_ORDER } from '../utils/userProgress';
@@ -39,6 +47,18 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
     ...p,
     distance: startOffsetPx + i * spacingPx
   }));
+
+  // Planet image mapping
+  const planetImages = {
+    'Mercury': mercuryImage,
+    'Venus': venusImage,
+    'Earth': earthImage,
+    'Mars': marsImage,
+    'Jupiter': jupiterImage,
+    'Saturn': saturnImage,
+    'Uranus': uranusImage,
+    'Neptune': neptuneImage
+  };
 
   // Helper function to get ref for a planet
   const getPlanetRef = (planetId) => {
@@ -425,10 +445,9 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           }`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
                 <img
-                  src={sunImage}
+                  src={planetImages[planet.name]}
                   alt={planet.name}
                   className="w-full h-full object-contain rounded-full relative z-10"
-                  style={{ filter: `hue-rotate(${index * 45}deg) brightness(0.9)` }}
                 />
                 {/* Subtle planet glow */}
                 <div
@@ -441,19 +460,6 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
                     zIndex: 0
                   }}
                 />
-                {/* Saturn ring */}
-                {planet.id === 6 && (
-                  <div
-                    className="absolute top-1/2 left-1/2 border-4 border-yellow-200/40 rounded-full"
-                    style={{
-                      width: `${planet.size * 1.8}px`,
-                      height: `${planet.size * 0.6}px`,
-                      transform: 'translate(-50%, -50%) rotateX(75deg)',
-                      borderTopColor: 'transparent',
-                      borderBottomColor: 'transparent'
-                    }}
-                  />
-                )}
               </div>
 
               {/* Landed Spaceship Indicator */}
