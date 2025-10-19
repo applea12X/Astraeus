@@ -10,14 +10,22 @@ import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
 import ProfilePage from './components/ProfilePage';
-import FinancialInfoPage from './components/FinancialInfoPage';
+import UranusPage from './components/UranusPage';
+import UranusFormPage from './components/UranusFormPage';
+import SaturnPage from './components/SaturnPage';
+import SaturnResultsPage from './components/SaturnResultsPage';
 import JupiterPage from './components/JupiterPage';
+import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('landing');
+  const [vehiclePreferences, setVehiclePreferences] = useState(null);
+  const [financialInfo, setFinancialInfo] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [navPayload, setNavPayload] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -72,8 +80,21 @@ function App() {
     return () => unsubscribe();
   }, [currentPage]);
 
-  const handleNavigate = (page) => {
+  const handleNavigate = (page, payload) => {
+    // Handle special payloads
+    if (payload?.selectedVehicle) {
+      setSelectedVehicle(payload.selectedVehicle);
+    }
+    setNavPayload(payload ?? null);
     setCurrentPage(page);
+  };
+
+  const handleSubmitPreferences = (preferences) => {
+    setVehiclePreferences(preferences);
+  };
+
+  const handleSubmitFinancialInfo = (info) => {
+    setFinancialInfo(info);
   };
 
   // Page transition variants
@@ -122,11 +143,11 @@ function App() {
           />
         );
       case 'solar-system':
-        return <SolarSystem onNavigate={handleNavigate} />;
+        return <SolarSystem onNavigate={handleNavigate} navPayload={navPayload} />;
       case 'neptune':
         return <NeptunePage onNavigate={handleNavigate} />;
       case 'financial-info':
-        return <FinancialInfoPage onNavigate={handleNavigate} />;
+        return <FinancialInfoPage onNavigate={handleNavigate} onSubmitFinancialInfo={handleSubmitFinancialInfo} />;
       case 'jupiter':
         return <JupiterPage onNavigate={handleNavigate} financialInfo={null} />;
       case 'profile':
@@ -134,6 +155,34 @@ function App() {
           <ProfilePage 
             user={user}
             onBack={() => handleNavigate('landing')}
+          />
+        );
+      case 'uranus':
+        return <UranusPage onNavigate={handleNavigate} financialInfo={financialInfo} />;
+      case 'uranus-form':
+        return (
+          <UranusFormPage 
+            onNavigate={handleNavigate} 
+            onSubmitPreferences={handleSubmitPreferences}
+            financialInfo={financialInfo}
+          />
+        );
+      case 'saturn':
+        return <SaturnPage onNavigate={handleNavigate} />;
+      case 'saturn-results':
+        return (
+          <SaturnResultsPage 
+            onNavigate={handleNavigate}
+            preferences={vehiclePreferences}
+            financialInfo={financialInfo}
+            userProfile={userProfile}
+          />
+        );
+      case 'jupiter':
+        return (
+          <JupiterPage 
+            onNavigate={handleNavigate}
+            selectedVehicle={selectedVehicle}
           />
         );
       default:

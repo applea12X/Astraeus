@@ -1,13 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import sunImage from '../assets/sun.png';
 import NeptuneSpaceship from './ui/NeptuneSpaceship';
 
-const SolarSystem = ({ onNavigate }) => {
+const SolarSystem = ({ onNavigate, navPayload }) => {
   const [showSpaceship, setShowSpaceship] = useState(false);
   const [spaceshipStartPos, setSpaceshipStartPos] = useState({ x: 0, y: 0 });
+  const [spaceshipEndPos, setSpaceshipEndPos] = useState(null);
+  const [hasPlayedTransfer, setHasPlayedTransfer] = useState(false);
   const neptuneRef = useRef(null);
+  const uranusRef = useRef(null);
+  const saturnRef = useRef(null);
+  const jupiterRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -21,16 +26,26 @@ const SolarSystem = ({ onNavigate }) => {
     { id: 7, name: 'Uranus', size: 100, color: '#4FD0E0' },
     { id: 8, name: 'Neptune', size: 95, color: '#4166F5' }
   ];
-  const planets = basePlanets.map((p, i) => ({ ...p, distance: startOffsetPx + i * spacingPx }));
+  const planets = basePlanets.map((p, i) => ({ 
+    ...p, 
+    distance: startOffsetPx + i * spacingPx 
+  }));
+  
 
-  const handleNeptuneClick = (e) => {
-    if (neptuneRef.current) {
+  const handlePlanetClick = (planetName) => {
+    if (planetName === 'Neptune' && neptuneRef.current) {
       const rect = neptuneRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      
       setSpaceshipStartPos({ x: centerX, y: centerY });
+      setSpaceshipEndPos(null);
       setShowSpaceship(true);
+    } else if (planetName === 'Uranus') {
+      onNavigate('uranus');
+    } else if (planetName === 'Saturn') {
+      onNavigate('saturn');
+    } else if (planetName === 'Jupiter') {
+      onNavigate('jupiter');
     }
   };
 
@@ -41,19 +56,72 @@ const SolarSystem = ({ onNavigate }) => {
     }
   };
 
+  const handleTransferComplete = () => {
+    setShowSpaceship(false);
+    setSpaceshipEndPos(null);
+    setHasPlayedTransfer(true);
+  };
+
+  // Trigger Neptune -> Uranus transfer when landing with payload
+  useEffect(() => {
+    if (hasPlayedTransfer) return;
+    const flight = navPayload && navPayload.flight;
+    if (!flight) return;
+    if (flight.from === 'neptune' && flight.to === 'uranus') {
+      // Compute centers once nodes are laid out
+      const computeAndStart = () => {
+        if (!neptuneRef.current || !uranusRef.current) return;
+        
+        const nRect = neptuneRef.current.getBoundingClientRect();
+        const uRect = uranusRef.current.getBoundingClientRect();
+        
+        const neptuneCenter = { 
+          x: nRect.left + nRect.width / 2, 
+          y: nRect.top + nRect.height / 2 
+        };
+        const uranusCenter = { 
+          x: uRect.left + uRect.width / 2, 
+          y: uRect.top + uRect.height / 2 
+        };
+        
+        console.log('Neptune center:', neptuneCenter, 'Uranus center:', uranusCenter);
+        console.log('Neptune rect:', nRect, 'Uranus rect:', uRect);
+        console.log('Neptune ref element:', neptuneRef.current);
+        console.log('Uranus ref element:', uranusRef.current);
+        
+        setSpaceshipStartPos(neptuneCenter);
+        setSpaceshipEndPos(uranusCenter);
+        setShowSpaceship(true);
+      };
+      
+      // Give more time for layout to settle, especially with horizontal scrolling
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => computeAndStart());
+        });
+      }, 300);
+    }
+  }, [navPayload, hasPlayedTransfer]);
+
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-x-auto overflow-y-hidden bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
       {/* Back Button */}
-      <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.5 }}
-        onClick={() => onNavigate && onNavigate('landing')}
-        className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="font-semibold">Back to Home</span>
-      </motion.button>
+      <div className="fixed top-6 left-6 z-50">
+        <div className="relative">
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            onClick={() => onNavigate && onNavigate('landing')}
+            className="relative flex items-center gap-3 px-8 py-4 text-lg font-semibold rounded-2xl border transition-all duration-300 backdrop-blur-lg bg-gradient-to-r from-blue-500/30 to-blue-600/30 hover:from-blue-500/40 hover:to-blue-600/40 border-blue-400/60 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:scale-105"
+          >
+            <ArrowLeft className="w-6 h-6" />
+            <span>Back to Home</span>
+          </motion.button>
+          {/* Button glow effect */}
+          <div className="absolute inset-0 rounded-2xl bg-blue-400/20 blur-xl -z-10 scale-110 opacity-60"></div>
+        </div>
+      </div>
 
       {/* Stars Background (static) */}
       <div className="absolute inset-0">
@@ -91,9 +159,9 @@ const SolarSystem = ({ onNavigate }) => {
         right: `${planet.distance}px` }} > 
         {/* Planet */} 
         <div 
-          ref={planet.id === 8 ? neptuneRef : null}
-          onClick={planet.id === 8 ? handleNeptuneClick : (planet.id === 5 ? () => onNavigate('jupiter') : undefined)}
-          className={`relative rounded-full shadow-2xl ${(planet.id === 8 || planet.id === 5) ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
+          ref={planet.id === 8 ? neptuneRef : planet.id === 7 ? uranusRef : planet.id === 6 ? saturnRef : planet.id === 5 ? jupiterRef : null}
+          onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : planet.id === 5 ? () => handlePlanetClick('Jupiter') : undefined}
+          className={`relative rounded-full shadow-2xl ${(planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5) ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
                 <img 
                   src={sunImage} 
@@ -123,7 +191,11 @@ const SolarSystem = ({ onNavigate }) => {
 
               {/* Planet label */}
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
-                <div className="bg-white/90 text-gray-900 w-[80px] text-center py-1.5 rounded-full text-sm font-semibold shadow-lg">
+                <div className={`w-[80px] text-center py-1.5 rounded-full text-sm font-semibold shadow-lg ${
+                  (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5) 
+                    ? 'bg-blue-500/90 text-white animate-pulse' 
+                    : 'bg-white/90 text-gray-900'
+                }`}>
                   {planet.name}
                 </div>
               </div>
@@ -144,9 +216,10 @@ const SolarSystem = ({ onNavigate }) => {
       
       {/* Spaceship animation */}
       {showSpaceship && (
-        <NeptuneSpaceship 
-          startPosition={spaceshipStartPos} 
-          onAnimationComplete={handleAnimationComplete} 
+        <NeptuneSpaceship
+          startPosition={spaceshipStartPos}
+          endPosition={spaceshipEndPos}
+          onAnimationComplete={spaceshipEndPos ? handleTransferComplete : handleAnimationComplete}
         />
       )}
     </div>

@@ -18,16 +18,22 @@ const NeptunePage = ({ onNavigate }) => {
       }}
     >
       {/* Back Button */}
-      <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.5 }}
-        onClick={() => onNavigate && onNavigate('solar-system')}
-        className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="font-semibold">Back to Solar System</span>
-      </motion.button>
+      <div className="fixed top-6 left-6 z-50">
+        <div className="relative">
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            onClick={() => onNavigate && onNavigate('solar-system')}
+            className="relative flex items-center gap-3 px-8 py-4 text-lg font-semibold rounded-2xl border transition-all duration-300 backdrop-blur-lg bg-gradient-to-r from-blue-500/30 to-blue-600/30 hover:from-blue-500/40 hover:to-blue-600/40 border-blue-400/60 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:scale-105"
+          >
+            <ArrowLeft className="w-6 h-6" />
+            <span>Back to Solar System</span>
+          </motion.button>
+          {/* Button glow effect */}
+          <div className="absolute inset-0 rounded-2xl bg-blue-400/20 blur-xl -z-10 scale-110 opacity-60"></div>
+        </div>
+      </div>
       {/* Neptune-themed gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a237e] via-[#283593] to-[#3949ab]">
         {/* Animated stars */}
@@ -170,17 +176,26 @@ const NeptunePage = ({ onNavigate }) => {
               </div>
               
               {/* Next button */}
-              <motion.button
+              <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1.8 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate && onNavigate('financial-info')}
-                className="mt-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="mt-8"
               >
-                Next →
-              </motion.button>
+                <div className="relative">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => onNavigate && onNavigate('financial-info')}
+                    className="relative px-20 py-6 text-2xl font-semibold rounded-2xl border transition-all duration-300 backdrop-blur-lg min-w-[200px] bg-gradient-to-r from-blue-500/30 to-blue-600/30 hover:from-blue-500/40 hover:to-blue-600/40 border-blue-400/60 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:scale-105"
+                  >
+                    Next →
+                  </motion.button>
+                  
+                  {/* Button glow effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-blue-400/20 blur-xl -z-10 scale-110 opacity-60"></div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>

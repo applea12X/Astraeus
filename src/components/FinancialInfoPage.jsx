@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, Clock, User, GraduationCap, Home, Coffee, ArrowLeft } from 'lucide-react';
+import { Briefcase, Clock, User, GraduationCap, Home, Coffee, ArrowLeft, TrendingUp, TrendingDown, Minus, Star, Target, Car, Building, Calendar, DollarSign } from 'lucide-react';
 import { IconGrid } from './ui/icon-set';
+import { auth, db } from '../firebase/config';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
 
-const FinancialInfoPage = ({ onNavigate }) => {
+const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     employmentStatus: '',
     occupation: '',
     employerName: '',
-    annualIncome: ''
+    annualIncome: '',
+    creditScore: '',
+    financialGoal: '',
+    paymentFrequency: ''
   });
 
   const steps = [
@@ -58,6 +64,70 @@ const FinancialInfoPage = ({ onNavigate }) => {
       ]
     },
     {
+      field: 'creditScore',
+      label: 'Credit Score Range',
+      type: 'icons',
+      placeholder: 'Select your credit score range',
+      options: [
+        { 
+          id: 'poor',
+          value: 'poor', 
+          name: 'Poor (300-579)', 
+          icon: <TrendingDown className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'fair',
+          value: 'fair', 
+          name: 'Fair (580-669)', 
+          icon: <Minus className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'good',
+          value: 'good', 
+          name: 'Good (670-739)', 
+          icon: <TrendingUp className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'excellent',
+          value: 'excellent', 
+          name: 'Excellent (740+)', 
+          icon: <Star className="h-8 w-8 text-white/80" />
+        }
+      ]
+    },
+    {
+      field: 'financialGoal',
+      label: 'Primary Financial Goal',
+      type: 'icons',
+      placeholder: 'What are you looking to finance?',
+      options: [
+        { 
+          id: 'vehicle',
+          value: 'vehicle', 
+          name: 'Vehicle Purchase', 
+          icon: <Car className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'lease',
+          value: 'lease', 
+          name: 'Vehicle Lease', 
+          icon: <Calendar className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'refinance',
+          value: 'refinance', 
+          name: 'Refinancing', 
+          icon: <DollarSign className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'investment',
+          value: 'investment', 
+          name: 'Investment', 
+          icon: <Target className="h-8 w-8 text-white/80" />
+        }
+      ]
+    },
+    {
       field: 'occupation',
       label: 'Occupation / Job Title',
       type: 'text',
@@ -74,6 +144,38 @@ const FinancialInfoPage = ({ onNavigate }) => {
       label: 'Annual Income (before tax)',
       type: 'number',
       placeholder: 'e.g., 50000'
+    },
+    {
+      field: 'paymentFrequency',
+      label: 'Payment Frequency Preference',
+      type: 'icons',
+      placeholder: 'How often would you like to make payments?',
+      options: [
+        { 
+          id: 'weekly',
+          value: 'weekly', 
+          name: 'Weekly', 
+          icon: <Calendar className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'biweekly',
+          value: 'biweekly', 
+          name: 'Bi-weekly', 
+          icon: <Calendar className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'monthly',
+          value: 'monthly', 
+          name: 'Monthly', 
+          icon: <Calendar className="h-8 w-8 text-white/80" />
+        },
+        { 
+          id: 'quarterly',
+          value: 'quarterly', 
+          name: 'Quarterly', 
+          icon: <Building className="h-8 w-8 text-white/80" />
+        }
+      ]
     }
   ];
 
@@ -82,15 +184,90 @@ const FinancialInfoPage = ({ onNavigate }) => {
       ...prev,
       [field]: value
     }));
+    // Don't auto-advance on selection, let user click Next button
   };
 
-  const handleNext = () => {
+  const saveFinancialInfo = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error('No authenticated user found');
+      return false;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      // Prepare the financial data with timestamp
+      const financialData = {
+        ...formData,
+        completedAt: new Date().toISOString(),
+        userId: user.uid
+      };
+
+      // Store in a 'financial_profiles' collection with user ID as document ID
+      await setDoc(doc(db, 'financial_profiles', user.uid), financialData);
+      
+      // Also update the user's main profile to indicate they completed financial info and Neptune
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          hasCompletedFinancialInfo: true,
+          neptuneCompleted: true,
+          neptuneCompletedAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        });
+      } catch (updateError) {
+        // If user document doesn't exist, create it
+        if (updateError.code === 'not-found') {
+          await setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            hasCompletedFinancialInfo: true,
+            neptuneCompleted: true,
+            neptuneCompletedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString()
+          });
+        } else {
+          throw updateError;
+        }
+      }
+
+      console.log('Financial info saved successfully');
+      return true;
+    } catch (error) {
+      console.error('Error saving financial info:', error);
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNext = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Handle form submission here
+      // Handle form submission - save to Firestore and navigate
       console.log('Financial info submitted:', formData);
-      // Navigate to next screen (placeholder for now)
+      
+      const saved = await saveFinancialInfo();
+      
+      if (saved) {
+        // Pass data to parent component
+        if (onSubmitFinancialInfo) {
+          onSubmitFinancialInfo(formData);
+        }
+        
+        // Navigate back to solar system to continue journey with transfer animation
+        if (onNavigate) {
+          onNavigate('solar-system', { 
+            flight: { 
+              from: 'neptune', 
+              to: 'uranus' 
+            } 
+          });
+        }
+      } else {
+        alert('Failed to save financial information. Please try again.');
+      }
     }
   };
 
@@ -126,16 +303,22 @@ const FinancialInfoPage = ({ onNavigate }) => {
       </div>
 
       {/* Back Button */}
-      <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3 }}
-        onClick={() => onNavigate && onNavigate('neptune')}
-        className="fixed top-6 left-6 z-50 flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-lg"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="font-semibold">Back to Neptune</span>
-      </motion.button>
+      <div className="fixed top-6 left-6 z-50">
+        <div className="relative">
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            onClick={() => onNavigate && onNavigate('neptune')}
+            className="relative flex items-center gap-3 px-8 py-4 text-lg font-semibold rounded-2xl border transition-all duration-300 backdrop-blur-lg bg-gradient-to-r from-blue-500/30 to-blue-600/30 hover:from-blue-500/40 hover:to-blue-600/40 border-blue-400/60 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:scale-105"
+          >
+            <ArrowLeft className="w-6 h-6" />
+            <span>Back to Neptune</span>
+          </motion.button>
+          {/* Button glow effect */}
+          <div className="absolute inset-0 rounded-2xl bg-blue-400/20 blur-xl -z-10 scale-110 opacity-60"></div>
+        </div>
+      </div>
 
       {/* Title */}
       <div className="fixed top-10 left-10 z-30 ml-48">
@@ -151,7 +334,7 @@ const FinancialInfoPage = ({ onNavigate }) => {
         <div className="w-full max-w-2xl">
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentStep}
+              key={`step-${currentStep}`}
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
@@ -168,7 +351,9 @@ const FinancialInfoPage = ({ onNavigate }) => {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-3xl font-bold text-white drop-shadow-2xl mb-24 text-center"
+                className={`text-3xl font-bold text-white drop-shadow-2xl text-center ${
+                  currentStepData.type === 'icons' ? 'mb-24' : 'mb-32'
+                }`}
               >
                 {currentStepData.label}
               </motion.h2>
@@ -183,9 +368,26 @@ const FinancialInfoPage = ({ onNavigate }) => {
                 {currentStepData.type === 'icons' ? (
                   <IconGrid 
                     items={currentStepData.options}
+                    selectedValue={formData[currentStepData.field]}
                     onItemClick={(item) => handleInputChange(currentStepData.field, item.value)}
                     className="max-w-2xl mx-auto"
                   />
+                ) : currentStepData.type === 'select' ? (
+                  <div className="space-y-4">
+                    {currentStepData.options.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleInputChange(currentStepData.field, option.value)}
+                        className={`w-full px-6 py-5 rounded-2xl text-lg font-semibold transition-all ${
+                          formData[currentStepData.field] === option.value
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl scale-105'
+                            : 'bg-white/15 text-white/90 hover:bg-white/25 border border-white/30'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 ) : (
                   <div className="flex justify-center">
                     <div className="relative w-3/4">
@@ -214,18 +416,25 @@ const FinancialInfoPage = ({ onNavigate }) => {
                 <div className="relative">
                   <button
                     onClick={handleNext}
-                    disabled={!canProceed()}
+                    disabled={!canProceed() || isSubmitting}
                     className={`relative px-20 py-6 text-2xl font-semibold rounded-2xl border transition-all duration-300 backdrop-blur-lg min-w-[200px] ${
-                      canProceed()
+                      canProceed() && !isSubmitting
                         ? 'bg-gradient-to-r from-blue-500/30 to-blue-600/30 hover:from-blue-500/40 hover:to-blue-600/40 border-blue-400/60 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:scale-105'
                         : 'bg-white/10 border-white/20 text-white/50 cursor-not-allowed'
                     }`}
                   >
-                    {currentStep === steps.length - 1 ? 'Complete' : 'Next →'}
+                    {isSubmitting && currentStep === steps.length - 1 ? (
+                      <div className="flex items-center gap-3">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        Saving...
+                      </div>
+                    ) : (
+                      currentStep === steps.length - 1 ? 'Complete' : 'Next →'
+                    )}
                   </button>
                   
                   {/* Button glow effect */}
-                  {canProceed() && (
+                  {canProceed() && !isSubmitting && (
                     <div className="absolute inset-0 rounded-2xl bg-blue-400/20 blur-xl -z-10 scale-110 opacity-60"></div>
                   )}
                 </div>
