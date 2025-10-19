@@ -122,7 +122,7 @@ export const updateUserProgress = async (userId, planet, additionalData = {}) =>
     }
 
     // Check if journey is completed
-    if (planet === 'jupiter') {
+    if (planet === 'mars') {
       updateData.journeyCompleted = true;
       updateData.journeyCompletedAt = new Date().toISOString();
     }
@@ -203,9 +203,9 @@ export const getLandedPlanet = (userProgress) => {
     return null; // No spaceship visible until journey starts
   }
   
-  // If journey is completed, spaceship lands on Jupiter
+  // If journey is completed, spaceship lands on Mars
   if (userProgress.journeyCompleted) {
-    return 'jupiter';
+    return 'mars';
   }
   
   // Spaceship lands on the current planet or last completed planet
@@ -244,10 +244,10 @@ export const getNextSuggestion = (userProgress) => {
   // If journey completed
   if (userProgress.journeyCompleted) {
     return {
-      planet: 'jupiter',
+      planet: 'mars',
       action: 'complete',
       title: 'Journey Complete!',
-      message: 'Congratulations! Review your final selection on Jupiter.'
+      message: 'Congratulations! Your financial journey is complete.'
     };
   }
   
@@ -319,7 +319,7 @@ export const getGuideMessage = (userProgress, userName = 'Friend', currentRoute)
     }
     
     if (userProgress.journeyCompleted) {
-      return `Amazing work, ${userName}! 🎉 You've completed your entire financial journey. Visit Jupiter to review your final selection!`;
+      return `Amazing work, ${userName}! 🎉 You've completed your entire financial journey. You can revisit any planet to review your choices!`;
     }
     
     return `Hey ${userName}! ${suggestion.message} Ready to visit ${suggestion.planet}?`;
@@ -335,15 +335,15 @@ export const getGuideMessage = (userProgress, userName = 'Friend', currentRoute)
   }
   
   if (currentRoute === 'saturn' && userProgress.saturnCompleted) {
-    return `Perfect! ${userName}, you've seen your recommendations. Time to explore advanced payment options on Mars! 🔴`;
+    return `Perfect! ${userName}, you've seen your recommendations. Time to choose your payment path on Jupiter! 🪐`;
   }
   
   if (currentRoute === 'mars' && userProgress.marsCompleted) {
-    return `Outstanding work on Mars, ${userName}! 🚀 Ready for the final step? Let's visit Jupiter for your vehicle selection!`;
+    return `Congratulations, ${userName}! 🎉 You've completed your entire financial journey!`;
   }
   
   if (currentRoute === 'jupiter' && userProgress.jupiterCompleted) {
-    return `Congratulations, ${userName}! 🎉 You've completed your entire financial journey!`;
+    return `Excellent choice, ${userName}! 🎉 Your payment plan is selected. Ready to explore Mars for final details?`;
   }
   
   // Default encouragement message
