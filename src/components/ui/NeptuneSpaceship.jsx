@@ -51,7 +51,6 @@ const NeptuneSpaceship = ({ startPosition, onAnimationComplete }) => {
       if (onAnimationComplete) {
         onAnimationComplete();
       }
->>>>>>> c01dcef4ac9ff8a4533757d9d64bdf5d20669d13
     };
 
     sequence();

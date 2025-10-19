@@ -162,7 +162,7 @@ const NeptunePage = ({ onNavigate }) => {
                   </motion.button>
                 ))}
               </div>
-            </motion.div>
+              
               {/* Next button */}
               <motion.button
                 initial={{ y: 20, opacity: 0 }}
@@ -175,8 +175,8 @@ const NeptunePage = ({ onNavigate }) => {
               >
                 Next →
               </motion.button>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
 
         {/* Ambient light effects */}
