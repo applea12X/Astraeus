@@ -160,14 +160,14 @@ export default function SignUpForm({ onSignIn }) {
       />
 
       {/* Main Content */}
-      <div className="relative flex items-center justify-center min-h-screen py-12 px-4" style={{ zIndex: 10 }}>
-        <div className="w-full max-w-md">
+      <div className="relative flex items-center justify-center min-h-screen py-8 px-4" style={{ zIndex: 10 }}>
+        <div className="w-full max-w-md my-8">
           {/* Glass-morphism Card */}
-          <Card className="border border-white/20 bg-black/40 backdrop-blur-xl shadow-2xl pb-0 overflow-hidden">
+          <Card className="border border-white/20 bg-black/40 backdrop-blur-xl shadow-2xl pb-0 overflow-visible max-h-[90vh]">
             {/* Glow Effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 pointer-events-none" />
             
-            <CardHeader className="relative flex flex-col items-center space-y-3 pb-4 pt-8">
+            <CardHeader className="relative flex flex-col items-center space-y-2 pb-3 pt-6">
               <AstraeusLogo className="w-16 h-16 mb-2" />
               <div className="space-y-1 flex flex-col items-center">
                 <h2 className="text-3xl font-bold text-white drop-shadow-lg">
@@ -179,8 +179,8 @@ export default function SignUpForm({ onSignIn }) {
               </div>
             </CardHeader>
 
-            <CardContent className="relative space-y-5 px-8 pb-6">
-              <form onSubmit={handleEmailPasswordSignUp} className="space-y-5">
+            <CardContent className="relative space-y-5 px-8 pb-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+              <form onSubmit={handleEmailPasswordSignUp} className="space-y-4">
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">

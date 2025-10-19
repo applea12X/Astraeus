@@ -189,11 +189,22 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
       };
 
       // Update user document with vehicle preferences using merge
+      // Get current user data to preserve existing completedPlanets
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const currentCompletedPlanets = userDoc.exists() ? (userDoc.data().completedPlanets || []) : [];
+
+      // Add uranus if not already in array
+      const updatedCompletedPlanets = currentCompletedPlanets.includes('uranus')
+        ? currentCompletedPlanets
+        : [...currentCompletedPlanets, 'uranus'];
+
       await setDoc(doc(db, 'users', user.uid), {
         vehiclePreferences: preferencesData,
         hasCompletedVehiclePreferences: true,
         uranusCompleted: true,
         uranusCompletedAt: new Date().toISOString(),
+        completedPlanets: updatedCompletedPlanets,
+        currentPlanet: 'saturn', // Set next planet
         lastUpdated: new Date().toISOString()
       }, { merge: true });
 

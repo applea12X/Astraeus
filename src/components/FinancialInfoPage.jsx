@@ -247,10 +247,21 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
       
       // Also update the user's main profile to indicate they completed financial info and Neptune
       try {
+        // First get current user data to preserve existing completedPlanets
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const currentCompletedPlanets = userDoc.exists() ? (userDoc.data().completedPlanets || []) : [];
+
+        // Add neptune if not already in array
+        const updatedCompletedPlanets = currentCompletedPlanets.includes('neptune')
+          ? currentCompletedPlanets
+          : [...currentCompletedPlanets, 'neptune'];
+
         await updateDoc(doc(db, 'users', user.uid), {
           hasCompletedFinancialInfo: true,
           neptuneCompleted: true,
           neptuneCompletedAt: new Date().toISOString(),
+          completedPlanets: updatedCompletedPlanets,
+          currentPlanet: 'uranus', // Set next planet
           lastUpdated: new Date().toISOString()
         });
       } catch (updateError) {
@@ -261,6 +272,8 @@ const FinancialInfoPage = ({ onNavigate, onSubmitFinancialInfo }) => {
             hasCompletedFinancialInfo: true,
             neptuneCompleted: true,
             neptuneCompletedAt: new Date().toISOString(),
+            completedPlanets: ['neptune'],
+            currentPlanet: 'uranus',
             createdAt: new Date().toISOString(),
             lastUpdated: new Date().toISOString()
           });
