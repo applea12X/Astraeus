@@ -4,7 +4,6 @@ import { ArrowLeft, Car, Users, DollarSign, Zap, Target, Info } from 'lucide-rea
 import { auth, db } from '../firebase/config';
 import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { calculateRecommendedCarPrice, formatCurrency, getBudgetRecommendationMessage } from '../utils/financialCalculations';
-import AIShoppingAssistant from './AIShoppingAssistant';
 
 const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -477,9 +476,6 @@ const UranusPage = ({ onNavigate, onSubmitPreferences, financialInfo }) => {
       {/* Ambient glow effects */}
       <div className="fixed top-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-      
-      {/* AI Shopping Assistant */}
-      <AIShoppingAssistant selectedVehicle={null} financialInfo={financialInfo} userProfile={{}} />
     </motion.div>
   );
 };

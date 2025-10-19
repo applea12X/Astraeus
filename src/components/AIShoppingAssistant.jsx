@@ -555,16 +555,6 @@ Respond conversationally, reference their specific situation, and provide action
             <div className="w-4 h-2 border-2 border-white border-t-0 rounded-b-full"></div>
           </div>
 
-          {/* Antennae */}
-          <div className="absolute -top-2 left-3">
-            <div className="w-0.5 h-4 bg-red-300"></div>
-            <div className="w-2 h-2 bg-white rounded-full -mt-1 ml-[-3px] shadow-sm"></div>
-          </div>
-          <div className="absolute -top-2 right-3">
-            <div className="w-0.5 h-4 bg-red-300"></div>
-            <div className="w-2 h-2 bg-white rounded-full -mt-1 ml-[-3px] shadow-sm"></div>
-          </div>
-
           {/* Listening Ears - appear on hover */}
           <motion.div
             initial={{ opacity: 0, x: 5 }}
