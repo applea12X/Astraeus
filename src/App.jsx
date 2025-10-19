@@ -148,6 +148,7 @@ function App() {
       case 'solar-system':
         return <SolarSystem onNavigate={handleNavigate} navPayload={navPayload} userProfile={userProfile} />;
       case 'neptune':
+        console.log('Navigating to Neptune page...');
         return <NeptunePage onNavigate={handleNavigate} />;
       case 'mars':
         return <MarsPage onNavigate={handleNavigate} />;
@@ -163,8 +164,6 @@ function App() {
         return <PaymentSimulationPage onNavigate={handleNavigate} navPayload={navPayload} />;
       case 'financial-info':
         return <FinancialInfoPage onNavigate={handleNavigate} onSubmitFinancialInfo={handleSubmitFinancialInfo} />;
-      case 'jupiter':
-        return <JupiterPage onNavigate={handleNavigate} financialInfo={null} />;
       case 'profile':
         return (
           <ProfilePage 

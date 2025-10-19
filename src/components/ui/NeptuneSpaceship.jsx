@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
-// Temporarily removed framer-motion and lucide-react for simplified setup
-// import { motion, useMotionValue, animate } from 'framer-motion';
-// import { Rocket } from 'lucide-react';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { Rocket } from 'lucide-react';
 
 const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) => {
   const SHIP_SIZE = 128; // matches w-32 h-32
   const HALF_SHIP = SHIP_SIZE / 2;
+
+  // Use state to trigger re-renders
+  const [style, setStyle] = useState({
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    transform: 'scale(0.6) rotate(0deg)',
+    opacity: 1,
+    transformOrigin: 'center',
+    zIndex: 9999,
+    pointerEvents: 'none'
+  });
 
   // Anchor the ship's center to the provided start position
   const x = useMotionValue(0);
@@ -13,6 +24,39 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
   const scale = useMotionValue(0.6);
   const rotate = useMotionValue(0);
   const opacity = useMotionValue(1);
+
+  // Update style whenever motion values change
+  useEffect(() => {
+    const unsubscribeX = x.on('change', (latest) => {
+      setStyle(prev => ({ ...prev, left: latest }));
+    });
+    const unsubscribeY = y.on('change', (latest) => {
+      setStyle(prev => ({ ...prev, top: latest }));
+    });
+    const unsubscribeScale = scale.on('change', (latest) => {
+      setStyle(prev => ({ 
+        ...prev, 
+        transform: `scale(${latest}) rotate(${rotate.get()}deg)` 
+      }));
+    });
+    const unsubscribeRotate = rotate.on('change', (latest) => {
+      setStyle(prev => ({ 
+        ...prev, 
+        transform: `scale(${scale.get()}) rotate(${latest}deg)` 
+      }));
+    });
+    const unsubscribeOpacity = opacity.on('change', (latest) => {
+      setStyle(prev => ({ ...prev, opacity: latest }));
+    });
+
+    return () => {
+      unsubscribeX();
+      unsubscribeY();
+      unsubscribeScale();
+      unsubscribeRotate();
+      unsubscribeOpacity();
+    };
+  }, [x, y, scale, rotate, opacity]);
 
   useEffect(() => {
     const run = async () => {
@@ -100,7 +144,7 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
   }, [startPosition, endPosition, onAnimationComplete, x, y, scale, rotate, opacity]);
 
   return (
-    <div style={getAnimationStyle()}>
+    <div style={style}>
       <div className="relative">
         {/* Spaceship Body */}
         <div className="relative w-32 h-32 flex items-center justify-center">
