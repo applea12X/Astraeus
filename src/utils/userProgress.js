@@ -7,7 +7,8 @@ export const PLANET_ORDER = [
   { id: 'uranus', name: 'Uranus', route: 'uranus' },
   { id: 'saturn', name: 'Saturn', route: 'saturn' },
   { id: 'jupiter', name: 'Jupiter', route: 'jupiter' },
-  { id: 'mars', name: 'Mars', route: 'mars' }
+  { id: 'mars', name: 'Mars', route: 'mars' },
+  { id: 'earth', name: 'Earth', route: 'earth' }
 ];
 
 // Progress stages and their requirements
@@ -46,6 +47,13 @@ export const PROGRESS_STAGES = {
     description: 'Explore financing options',
     requires: ['neptune', 'uranus', 'saturn', 'jupiter'],
     completionField: 'marsCompleted'
+  },
+  earth: {
+    name: 'Earth',
+    title: 'Purchase Planning',
+    description: 'Create your comprehensive purchase plan',
+    requires: ['neptune', 'uranus', 'saturn', 'jupiter', 'mars'],
+    completionField: 'earthCompleted'
   }
 };
 
@@ -68,6 +76,7 @@ export const getUserProgress = async (userId) => {
         saturnCompleted: userData.saturnCompleted || false,
         marsCompleted: userData.marsCompleted || false,
         jupiterCompleted: userData.jupiterCompleted || false,
+        earthCompleted: userData.earthCompleted || false,
         lastVisited: userData.lastVisited || null,
         journeyStarted: userData.journeyStarted || false,
         journeyCompleted: userData.journeyCompleted || false,
@@ -84,6 +93,7 @@ export const getUserProgress = async (userId) => {
       saturnCompleted: false,
       marsCompleted: false,
       jupiterCompleted: false,
+      earthCompleted: false,
       lastVisited: null,
       journeyStarted: false,
       journeyCompleted: false
@@ -122,7 +132,7 @@ export const updateUserProgress = async (userId, planet, additionalData = {}) =>
     }
 
     // Check if journey is completed
-    if (planet === 'mars') {
+    if (planet === 'earth') {
       updateData.journeyCompleted = true;
       updateData.journeyCompletedAt = new Date().toISOString();
     }
@@ -203,9 +213,9 @@ export const getLandedPlanet = (userProgress) => {
     return null; // No spaceship visible until journey starts
   }
   
-  // If journey is completed, spaceship lands on Mars
+  // If journey is completed, spaceship lands on Earth
   if (userProgress.journeyCompleted) {
-    return 'mars';
+    return 'earth';
   }
   
   // Spaceship lands on the current planet or last completed planet
@@ -244,7 +254,7 @@ export const getNextSuggestion = (userProgress) => {
   // If journey completed
   if (userProgress.journeyCompleted) {
     return {
-      planet: 'mars',
+      planet: 'earth',
       action: 'complete',
       title: 'Journey Complete!',
       message: 'Congratulations! Your financial journey is complete.'
@@ -339,6 +349,10 @@ export const getGuideMessage = (userProgress, userName = 'Friend', currentRoute)
   }
   
   if (currentRoute === 'mars' && userProgress.marsCompleted) {
+    return `Great work on Mars, ${userName}! 🚀 Now let's finalize everything with your purchase plan on Earth!`;
+  }
+  
+  if (currentRoute === 'earth' && userProgress.earthCompleted) {
     return `Congratulations, ${userName}! 🎉 You've completed your entire financial journey!`;
   }
   
