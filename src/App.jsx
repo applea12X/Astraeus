@@ -165,6 +165,7 @@ function App() {
             financialInfo={financialInfo}
             vehiclePreferences={vehiclePreferences}
             userProfile={userProfile}
+            selectedVehicle={selectedVehicle}
           />
         );
       case 'payment-simulations':
