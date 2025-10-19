@@ -4,13 +4,28 @@ import AnimatedShaderBackground from '../components/ui/animated-shader-backgroun
 import GalaxyButton from './ui/GalaxyButton';
 import UserProfileDropdown from './ui/UserProfileDropdown';
 import AIShoppingAssistant from './AIShoppingAssistant';
+import NeptuneSpaceship from './ui/NeptuneSpaceship';
 
 const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, userProfile }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [showSpaceship, setShowSpaceship] = useState(true);
+  const [spaceshipComplete, setSpaceshipComplete] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
-  }, []);
+    // Show UI elements after spaceship animation completes
+    if (spaceshipComplete) {
+      setTimeout(() => {
+        setIsVisible(true);
+      }, 300);
+    }
+  }, [spaceshipComplete]);
+
+  const handleSpaceshipComplete = () => {
+    setSpaceshipComplete(true);
+    setTimeout(() => {
+      setShowSpaceship(false);
+    }, 500);
+  };
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -18,6 +33,18 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
       <div className="fixed inset-0 w-full h-full" style={{ zIndex: 0 }}>
         <AnimatedShaderBackground />
       </div>
+
+      {/* Spaceship Intro Animation */}
+      {showSpaceship && (
+        <NeptuneSpaceship
+          startPosition={{
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2
+          }}
+          endPosition={null}
+          onAnimationComplete={handleSpaceshipComplete}
+        />
+      )}
 
       {/* User Profile Dropdown - Top Right */}
       {user && (
@@ -31,13 +58,13 @@ const LandingPage = ({ onSignIn, onSignUp, onNavigate, onViewProfile, user, user
         </div>
       )}
 
-      {/* Main Content - Fades in automatically */}
+      {/* Main Content - Fades in after spaceship */}
       <div
         className="relative flex flex-col items-center justify-center h-full px-4"
-        style={{ 
+        style={{
           zIndex: 10,
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.8)',
+          opacity: isVisible && spaceshipComplete ? 1 : 0,
+          transform: isVisible && spaceshipComplete ? 'scale(1)' : 'scale(0.8)',
           transition: 'all 1s ease-out'
         }}
       >
