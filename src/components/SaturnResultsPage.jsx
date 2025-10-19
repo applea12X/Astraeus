@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, Loader2, Car, DollarSign, Calendar, Zap, ArrowRight, X } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Car, DollarSign, Calendar, Zap, ArrowRight, X, CheckCircle2 } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => {
@@ -30,7 +30,7 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       // Build comprehensive prompt with ALL data
-      const prompt = `You are a Toyota car expert and financial advisor. Based on ALL the customer information below, recommend 5-10 Toyota or Lexus vehicles that would be the best fit. Use their financial profile to suggest appropriate financing options.
+      const prompt = `You are a Toyota car expert and financial advisor. Based on ALL the customer information below, recommend exactly 3 Toyota or Lexus vehicles that would be the best fit. Use their financial profile to suggest appropriate financing options.
 
 **Customer Profile:**
 ${userProfile ? `
@@ -69,12 +69,18 @@ ${financialInfo ? `
 
 **IMPORTANT: You MUST respond with ONLY valid JSON. No markdown, no code blocks, no extra text.**
 
-Return a JSON array of 5-10 vehicle recommendations with this EXACT structure:
+For the imageUrl field, provide a direct link to a high-quality copyright-free image of the vehicle from Unsplash or similar free stock photo sites. Use this format:
+- For Toyota vehicles: https://images.unsplash.com/photo-[relevant-toyota-image-id]
+- Search Unsplash mentally for: "[YEAR] [MAKE] [MODEL] exterior"
+- Provide actual working Unsplash URLs with proper photo IDs
+
+Return a JSON array of exactly 3 vehicle recommendations with this EXACT structure:
 [
   {
     "name": "2024 Toyota Camry LE",
     "year": "2024",
     "model": "Camry LE",
+    "imageUrl": "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800&q=80",
     "priceNew": "$26,420 - $28,500",
     "priceUsed": "$22,000 - $25,000",
     "priceLeaseMonthly": "$299 - $349/month",
@@ -311,11 +317,24 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
           >
             {/* Vehicle Hero */}
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 shadow-2xl">
-              {/* Placeholder for vehicle image */}
-              <div className="w-full h-96 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-2xl flex items-center justify-center mb-8 border border-amber-400/30">
-                <div className="text-center">
-                  <Car className="w-32 h-32 text-amber-400 mx-auto mb-4" />
-                  <p className="text-amber-200 text-lg">Vehicle Image Coming Soon</p>
+              {/* Vehicle Image */}
+              <div className="w-full h-96 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-2xl mb-8 border border-amber-400/30 overflow-hidden">
+                {selectedVehicle.imageUrl ? (
+                  <img 
+                    src={selectedVehicle.imageUrl} 
+                    alt={selectedVehicle.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className="w-full h-full flex items-center justify-center" style={{ display: selectedVehicle.imageUrl ? 'none' : 'flex' }}>
+                  <div className="text-center">
+                    <Car className="w-32 h-32 text-amber-400 mx-auto mb-4" />
+                    <p className="text-amber-200 text-lg">Vehicle Image</p>
+                  </div>
                 </div>
               </div>
 
@@ -434,7 +453,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center flex-wrap">
               <button
                 onClick={() => setSelectedVehicle(null)}
                 className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold rounded-xl transition-all"
@@ -442,10 +461,16 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                 View Other Vehicles
               </button>
               <button
-                onClick={() => onNavigate && onNavigate('solar-system')}
-                className="px-8 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-semibold rounded-xl shadow-lg transition-all"
+                onClick={() => {
+                  // Save selected vehicle and navigate to Jupiter
+                  if (onNavigate) {
+                    onNavigate('jupiter', { selectedVehicle });
+                  }
+                }}
+                className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2"
               >
-                Continue Journey →
+                <CheckCircle2 className="w-5 h-5" />
+                Select This Car & Continue →
               </button>
             </div>
           </motion.div>
@@ -520,9 +545,22 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                 onClick={() => setSelectedVehicle(vehicle)}
                 className="bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/20 shadow-lg hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group"
               >
-                {/* Vehicle Image Placeholder */}
-                <div className="w-full h-48 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 flex items-center justify-center border-b border-white/10">
-                  <Car className="w-20 h-20 text-amber-400 group-hover:scale-110 transition-transform" />
+                {/* Vehicle Image */}
+                <div className="w-full h-48 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 border-b border-white/10 overflow-hidden">
+                  {vehicle.imageUrl ? (
+                    <img 
+                      src={vehicle.imageUrl} 
+                      alt={vehicle.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className="w-full h-full flex items-center justify-center" style={{ display: vehicle.imageUrl ? 'none' : 'flex' }}>
+                    <Car className="w-20 h-20 text-amber-400 group-hover:scale-110 transition-transform" />
+                  </div>
                 </div>
 
                 {/* Vehicle Info */}

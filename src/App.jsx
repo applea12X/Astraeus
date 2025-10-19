@@ -17,6 +17,7 @@ import UranusPage from './components/UranusPage';
 import UranusFormPage from './components/UranusFormPage';
 import SaturnPage from './components/SaturnPage';
 import SaturnResultsPage from './components/SaturnResultsPage';
+import JupiterPage from './components/JupiterPage';
 import FinancialInfoPage from './components/FinancialInfoPage';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState('landing');
   const [vehiclePreferences, setVehiclePreferences] = useState(null);
   const [financialInfo, setFinancialInfo] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [navPayload, setNavPayload] = useState(null);
 
   useEffect(() => {
@@ -82,6 +84,10 @@ function App() {
   }, [currentPage]);
 
   const handleNavigate = (page, payload) => {
+    // Handle special payloads
+    if (payload?.selectedVehicle) {
+      setSelectedVehicle(payload.selectedVehicle);
+    }
     setNavPayload(payload ?? null);
     setCurrentPage(page);
   };
@@ -183,6 +189,13 @@ function App() {
             preferences={vehiclePreferences}
             financialInfo={financialInfo}
             userProfile={userProfile}
+          />
+        );
+      case 'jupiter':
+        return (
+          <JupiterPage 
+            onNavigate={handleNavigate}
+            selectedVehicle={selectedVehicle}
           />
         );
       default:
