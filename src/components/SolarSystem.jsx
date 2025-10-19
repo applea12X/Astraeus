@@ -472,7 +472,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   }, [navPayload, hasPlayedTransfer]);
 
   return (
-    <div className="fixed inset-0 w-screen h-screen overflow-x-auto overflow-y-hidden bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
+    <div className="fixed inset-0 w-screen h-screen overflow-x-hidden overflow-y-hidden bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#0f1229]">
       {/* Back Button */}
       <div className="fixed top-6 left-6 z-50">
         <div className="relative">
