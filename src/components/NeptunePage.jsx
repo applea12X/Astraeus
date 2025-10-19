@@ -57,8 +57,10 @@ const NeptunePage = ({ onNavigate }) => {
 
         {/* Large cartoon Neptune in the background */}
         <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+          className="absolute"
           style={{
+            top: '50%',
+            left: '50%',
             transform: 'translate(-50%, -50%) scale(1)',
             opacity: 1,
             transition: 'all 1.5s ease-out 0.3s'
@@ -143,27 +145,26 @@ const NeptunePage = ({ onNavigate }) => {
             
             {/* Interactive content area */}
             <div
-              className="mt-12 bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-2xl mx-auto border border-white/20"
+              className="mt-16 bg-white/10 backdrop-blur-lg rounded-3xl px-16 py-16 max-w-3xl mx-auto border border-white/20 space-y-10"
               style={{
                 transform: 'scale(1)',
                 opacity: 1,
                 transition: 'all 0.8s ease-out 1.2s'
               }}
             >
-              <h2 className="text-3xl font-semibold text-white mb-4">
+              <h2 className="text-3xl font-semibold text-white">
                 Your Adventure Begins
               </h2>
-              <p className="text-lg text-blue-50 leading-relaxed">
+              <p className="text-xl text-blue-50 leading-relaxed">
                 Neptune represents your introduction to the world of Toyota Financial.
                 Here you'll enter your preliminary financial information to get started.
               </p>
-              
+
               {/* Next button */}
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1.8 }}
-                className="mt-8"
               >
                 <div className="relative">
                   <motion.button
