@@ -43,6 +43,8 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
       onNavigate('uranus');
     } else if (planetName === 'Saturn') {
       onNavigate('saturn');
+    } else if (planetName === 'Mars') {
+      onNavigate('mars');
     }
   };
 
@@ -157,8 +159,8 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
         {/* Planet */} 
         <div 
           ref={planet.id === 8 ? neptuneRef : planet.id === 7 ? uranusRef : planet.id === 6 ? saturnRef : null}
-          onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : undefined}
-          className={`relative rounded-full shadow-2xl ${(planet.id === 8 || planet.id === 7 || planet.id === 6) ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
+          onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : planet.id === 4 ? () => handlePlanetClick('Mars') : undefined}
+          className={`relative rounded-full shadow-2xl ${(planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 4) ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
           style={{ width: `${planet.size}px`, height: `${planet.size}px` }} >
                 <img 
                   src={sunImage} 
@@ -189,8 +191,8 @@ const SolarSystem = ({ onNavigate, navPayload }) => {
               {/* Planet label */}
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
                 <div className={`w-[80px] text-center py-1.5 rounded-full text-sm font-semibold shadow-lg ${
-                  (planet.id === 8 || planet.id === 7 || planet.id === 6) 
-                    ? 'bg-blue-500/90 text-white animate-pulse' 
+                  (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 4) 
+                    ? (planet.id === 4 ? 'bg-red-500/90 text-white animate-pulse' : 'bg-blue-500/90 text-white animate-pulse')
                     : 'bg-white/90 text-gray-900'
                 }`}>
                   {planet.name}

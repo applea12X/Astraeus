@@ -9,6 +9,7 @@ import SignInForm from './components/ui/SignInForm';
 import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
+import MarsPage from './components/MarsPage';
 import ProfilePage from './components/ProfilePage';
 import UranusPage from './components/UranusPage';
 import UranusFormPage from './components/UranusFormPage';
@@ -140,6 +141,8 @@ function App() {
         return <SolarSystem onNavigate={handleNavigate} navPayload={navPayload} />;
       case 'neptune':
         return <NeptunePage onNavigate={handleNavigate} />;
+      case 'mars':
+        return <MarsPage onNavigate={handleNavigate} />;
       case 'financial-info':
         return <FinancialInfoPage onNavigate={handleNavigate} onSubmitFinancialInfo={handleSubmitFinancialInfo} />;
       case 'profile':
