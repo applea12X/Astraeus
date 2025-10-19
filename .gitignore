@@ -29,3 +29,6 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Configuration files with sensitive data
+config.json

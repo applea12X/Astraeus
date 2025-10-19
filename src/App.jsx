@@ -22,6 +22,7 @@ import JupiterPaymentPage from './components/JupiterPaymentPage';
 import JupiterPurchasePlan from './components/JupiterPurchasePlan';
 import FinancialInfoPage from './components/FinancialInfoPage';
 import AIShoppingAssistant from './components/AIShoppingAssistant';
+import EducationRocket from './components/education/EducationRocket';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -275,6 +276,14 @@ function App() {
           vehiclePreferences: vehiclePreferences
         }}
       />
+
+      {/* Credit Education Missions Rocket - appears when user is signed in */}
+      {user && (
+        <EducationRocket
+          user={user}
+          userProfile={userProfile}
+        />
+      )}
     </div>
   );
 }

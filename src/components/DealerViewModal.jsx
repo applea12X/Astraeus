@@ -1,8 +1,125 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, XCircle, User, DollarSign, Car, FileText, CreditCard, TrendingUp } from 'lucide-react';
+import { X, CheckCircle2, XCircle, User, DollarSign, Car, FileText, CreditCard, TrendingUp, AlertCircle, ThumbsUp, Award } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase/config';
+
+// Utility function to extract numeric price from price string
+const extractPrice = (priceString) => {
+  if (!priceString) return null;
+  // Extract first number from strings like "$26,420 - $28,500" or "$450 - $520/month"
+  const match = priceString.match(/\$?([\d,]+)/);
+  if (match) {
+    return parseInt(match[1].replace(/,/g, ''));
+  }
+  return null;
+};
+
+// Calculate customer affordability score (0-100)
+const calculateAffordabilityScore = (customerData, financialData, selectedVehicle) => {
+  let score = 0;
+  let maxScore = 0;
+  const breakdown = {};
+
+  // 1. Income to Price Ratio (30 points max)
+  maxScore += 30;
+  if (financialData?.annualIncome && selectedVehicle?.priceNew) {
+    const annualIncome = parseInt(financialData.annualIncome);
+    const vehiclePrice = extractPrice(selectedVehicle.priceNew);
+
+    if (annualIncome && vehiclePrice) {
+      const priceToIncomeRatio = vehiclePrice / annualIncome;
+
+      // Ideal: car price is 50% or less of annual income
+      if (priceToIncomeRatio <= 0.5) {
+        score += 30;
+        breakdown.incomeRatio = { score: 30, status: 'excellent', detail: `Vehicle price is ${Math.round(priceToIncomeRatio * 100)}% of annual income (Excellent)` };
+      } else if (priceToIncomeRatio <= 0.75) {
+        score += 22;
+        breakdown.incomeRatio = { score: 22, status: 'good', detail: `Vehicle price is ${Math.round(priceToIncomeRatio * 100)}% of annual income (Good)` };
+      } else if (priceToIncomeRatio <= 1.0) {
+        score += 15;
+        breakdown.incomeRatio = { score: 15, status: 'fair', detail: `Vehicle price is ${Math.round(priceToIncomeRatio * 100)}% of annual income (Fair)` };
+      } else {
+        score += 5;
+        breakdown.incomeRatio = { score: 5, status: 'poor', detail: `Vehicle price is ${Math.round(priceToIncomeRatio * 100)}% of annual income (High)` };
+      }
+    }
+  }
+
+  // 2. Credit Score (25 points max)
+  maxScore += 25;
+  const creditScore = financialData?.creditScore || '';
+  if (creditScore) {
+    if (creditScore === 'excellent' || creditScore.includes('740+')) {
+      score += 25;
+      breakdown.creditScore = { score: 25, status: 'excellent', detail: 'Excellent credit score (740+)' };
+    } else if (creditScore === 'good' || creditScore.includes('670-739')) {
+      score += 20;
+      breakdown.creditScore = { score: 20, status: 'good', detail: 'Good credit score (670-739)' };
+    } else if (creditScore === 'fair' || creditScore.includes('580-669')) {
+      score += 12;
+      breakdown.creditScore = { score: 12, status: 'fair', detail: 'Fair credit score (580-669)' };
+    } else {
+      score += 5;
+      breakdown.creditScore = { score: 5, status: 'poor', detail: 'Below average credit score' };
+    }
+  }
+
+  // 3. Employment Stability (20 points max)
+  maxScore += 20;
+  const employmentStatus = financialData?.employmentStatus;
+  if (employmentStatus) {
+    if (employmentStatus === 'full-time') {
+      score += 20;
+      breakdown.employment = { score: 20, status: 'excellent', detail: 'Full-time employment' };
+    } else if (employmentStatus === 'self-employed') {
+      score += 15;
+      breakdown.employment = { score: 15, status: 'good', detail: 'Self-employed' };
+    } else if (employmentStatus === 'part-time') {
+      score += 10;
+      breakdown.employment = { score: 10, status: 'fair', detail: 'Part-time employment' };
+    } else {
+      score += 5;
+      breakdown.employment = { score: 5, status: 'poor', detail: employmentStatus };
+    }
+  }
+
+  // 4. Monthly Payment Affordability (25 points max)
+  maxScore += 25;
+  if (financialData?.annualIncome && selectedVehicle?.priceFinanceMonthly) {
+    const monthlyIncome = parseInt(financialData.annualIncome) / 12;
+    const monthlyPayment = extractPrice(selectedVehicle.priceFinanceMonthly);
+
+    if (monthlyIncome && monthlyPayment) {
+      const paymentToIncomeRatio = monthlyPayment / monthlyIncome;
+
+      // Ideal: monthly payment is 10% or less of monthly income
+      if (paymentToIncomeRatio <= 0.10) {
+        score += 25;
+        breakdown.monthlyPayment = { score: 25, status: 'excellent', detail: `Monthly payment is ${Math.round(paymentToIncomeRatio * 100)}% of monthly income (Excellent)` };
+      } else if (paymentToIncomeRatio <= 0.15) {
+        score += 20;
+        breakdown.monthlyPayment = { score: 20, status: 'good', detail: `Monthly payment is ${Math.round(paymentToIncomeRatio * 100)}% of monthly income (Good)` };
+      } else if (paymentToIncomeRatio <= 0.20) {
+        score += 12;
+        breakdown.monthlyPayment = { score: 12, status: 'fair', detail: `Monthly payment is ${Math.round(paymentToIncomeRatio * 100)}% of monthly income (Fair)` };
+      } else {
+        score += 5;
+        breakdown.monthlyPayment = { score: 5, status: 'caution', detail: `Monthly payment is ${Math.round(paymentToIncomeRatio * 100)}% of monthly income (High)` };
+      }
+    }
+  }
+
+  const finalScore = Math.round((score / maxScore) * 100);
+
+  return {
+    score: finalScore,
+    rating: finalScore >= 80 ? 'Excellent Fit' : finalScore >= 65 ? 'Good Fit' : finalScore >= 50 ? 'Fair Fit' : 'High Risk',
+    color: finalScore >= 80 ? 'green' : finalScore >= 65 ? 'blue' : finalScore >= 50 ? 'yellow' : 'red',
+    breakdown
+  };
+};
 
 const DealerViewModal = ({ userId, userProfile, onClose }) => {
   const [customerData, setCustomerData] = useState(null);
@@ -82,6 +199,11 @@ const DealerViewModal = ({ userId, userProfile, onClose }) => {
   const totalSteps = journeySteps.length;
   const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
 
+  // Calculate affordability score if customer has selected a vehicle
+  const affordabilityScore = customerData?.selectedVehicle
+    ? calculateAffordabilityScore(customerData, financialData, customerData.selectedVehicle)
+    : null;
+
   return (
     <AnimatePresence>
       <motion.div
@@ -118,9 +240,111 @@ const DealerViewModal = ({ userId, userProfile, onClose }) => {
           {/* Demo Disclaimer */}
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg mx-8 mt-6 p-4">
             <p className="text-yellow-200 text-sm font-semibold">
-              Demo Mode: This is a demonstration view for dealership staff. Some data may be simulated.
+              Demo Mode: This is a demonstration view for dealership staff.
             </p>
           </div>
+
+          {/* Affordability Score Section - Prominent Display */}
+          {affordabilityScore && (
+            <div className="mx-8 mt-6">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className={`relative rounded-2xl p-6 border-2 overflow-hidden ${
+                  affordabilityScore.color === 'green'
+                    ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 border-green-500/50'
+                    : affordabilityScore.color === 'blue'
+                    ? 'bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border-blue-500/50'
+                    : affordabilityScore.color === 'yellow'
+                    ? 'bg-gradient-to-br from-yellow-900/40 to-orange-900/40 border-yellow-500/50'
+                    : 'bg-gradient-to-br from-red-900/40 to-pink-900/40 border-red-500/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {affordabilityScore.color === 'green' ? (
+                      <Award className="w-12 h-12 text-green-400" />
+                    ) : affordabilityScore.color === 'blue' ? (
+                      <ThumbsUp className="w-12 h-12 text-blue-400" />
+                    ) : affordabilityScore.color === 'yellow' ? (
+                      <AlertCircle className="w-12 h-12 text-yellow-400" />
+                    ) : (
+                      <AlertCircle className="w-12 h-12 text-red-400" />
+                    )}
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-1">Customer Affordability Score</h3>
+                      <p className="text-slate-300 text-sm">
+                        How well this customer can afford their selected vehicle
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-6xl font-black mb-2 ${
+                      affordabilityScore.color === 'green'
+                        ? 'text-green-400'
+                        : affordabilityScore.color === 'blue'
+                        ? 'text-blue-400'
+                        : affordabilityScore.color === 'yellow'
+                        ? 'text-yellow-400'
+                        : 'text-red-400'
+                    }`}>
+                      {affordabilityScore.score}
+                    </div>
+                    <div className={`text-lg font-bold ${
+                      affordabilityScore.color === 'green'
+                        ? 'text-green-300'
+                        : affordabilityScore.color === 'blue'
+                        ? 'text-blue-300'
+                        : affordabilityScore.color === 'yellow'
+                        ? 'text-yellow-300'
+                        : 'text-red-300'
+                    }`}>
+                      {affordabilityScore.rating}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Score Breakdown */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(affordabilityScore.breakdown).map(([key, data]) => (
+                    <div key={key} className="bg-black/20 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-white font-semibold text-sm capitalize">
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                          data.status === 'excellent'
+                            ? 'bg-green-500/30 text-green-300'
+                            : data.status === 'good'
+                            ? 'bg-blue-500/30 text-blue-300'
+                            : data.status === 'fair'
+                            ? 'bg-yellow-500/30 text-yellow-300'
+                            : 'bg-red-500/30 text-red-300'
+                        }`}>
+                          {data.score} pts
+                        </span>
+                      </div>
+                      <p className="text-slate-300 text-xs">{data.detail}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Recommendation */}
+                <div className="mt-4 p-4 bg-black/30 rounded-lg">
+                  <p className="text-white text-sm font-semibold mb-1">Dealer Recommendation:</p>
+                  <p className="text-slate-200 text-xs">
+                    {affordabilityScore.score >= 80
+                      ? '✅ Strong candidate for approval. Customer has excellent financial profile for this vehicle.'
+                      : affordabilityScore.score >= 65
+                      ? '✅ Good candidate for approval. Customer shows solid financial stability.'
+                      : affordabilityScore.score >= 50
+                      ? '⚠️ Proceed with caution. May require larger down payment or consider lower-priced options.'
+                      : '❌ High risk. Recommend discussing more affordable options or improving financial position first.'}
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          )}
 
           {/* Main Content Grid */}
           <div className="p-8 space-y-6">
@@ -409,22 +633,74 @@ const DealerViewModal = ({ userId, userProfile, onClose }) => {
                   )}
                 </div>
                 <div className="flex flex-col md:flex-row gap-6 items-start">
-                  {customerData.selectedVehicle.image && (
+                  {customerData.selectedVehicle.imageUrl && (
                     <img
-                      src={customerData.selectedVehicle.image}
-                      alt={`${customerData.selectedVehicle.make} ${customerData.selectedVehicle.model}`}
+                      src={customerData.selectedVehicle.imageUrl}
+                      alt={`${customerData.selectedVehicle.make || ''} ${customerData.selectedVehicle.model || ''}`}
                       className="w-full md:w-64 h-48 object-cover rounded-lg border border-orange-500/30"
                     />
                   )}
                   <div className="flex-1">
                     <p className="text-white font-bold text-2xl mb-2">
-                      {customerData.selectedVehicle.year} {customerData.selectedVehicle.make} {customerData.selectedVehicle.model}
+                      {customerData.selectedVehicle.year || ''} {customerData.selectedVehicle.make || ''} {customerData.selectedVehicle.model || ''}
                     </p>
-                    <p className="text-orange-400 font-bold text-3xl mb-4">
-                      ${customerData.selectedVehicle.price?.toLocaleString() || 'Price TBD'}
-                    </p>
+
+                    {/* All Pricing Options */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                      {customerData.selectedVehicle.priceNew && (
+                        <div className="bg-black/30 rounded-lg p-3 border border-orange-500/20">
+                          <p className="text-slate-400 text-xs mb-1">Purchase Price (New)</p>
+                          <p className="text-orange-400 font-bold text-xl">
+                            {customerData.selectedVehicle.priceNew}
+                          </p>
+                        </div>
+                      )}
+                      {customerData.selectedVehicle.priceUsed && (
+                        <div className="bg-black/30 rounded-lg p-3 border border-orange-500/20">
+                          <p className="text-slate-400 text-xs mb-1">Purchase Price (Used)</p>
+                          <p className="text-orange-400 font-bold text-xl">
+                            {customerData.selectedVehicle.priceUsed}
+                          </p>
+                        </div>
+                      )}
+                      {customerData.selectedVehicle.priceFinanceMonthly && (
+                        <div className="bg-black/30 rounded-lg p-3 border border-green-500/20">
+                          <p className="text-slate-400 text-xs mb-1">Finance (Monthly)</p>
+                          <p className="text-green-400 font-bold text-xl">
+                            {customerData.selectedVehicle.priceFinanceMonthly}
+                          </p>
+                        </div>
+                      )}
+                      {customerData.selectedVehicle.priceLeaseMonthly && (
+                        <div className="bg-black/30 rounded-lg p-3 border border-blue-500/20">
+                          <p className="text-slate-400 text-xs mb-1">Lease (Monthly)</p>
+                          <p className="text-blue-400 font-bold text-xl">
+                            {customerData.selectedVehicle.priceLeaseMonthly}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Vehicle Details */}
                     {customerData.selectedVehicle.description && (
-                      <p className="text-slate-300 text-sm">{customerData.selectedVehicle.description}</p>
+                      <div className="mb-3">
+                        <p className="text-slate-300 text-sm">{customerData.selectedVehicle.description}</p>
+                      </div>
+                    )}
+
+                    {/* Key Features */}
+                    {customerData.selectedVehicle.keyFeatures && customerData.selectedVehicle.keyFeatures.length > 0 && (
+                      <div>
+                        <p className="text-slate-400 text-xs mb-2">Key Features:</p>
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-300">
+                          {customerData.selectedVehicle.keyFeatures.slice(0, 6).map((feature, idx) => (
+                            <li key={idx} className="flex items-start gap-1">
+                              <span className="text-orange-400">•</span>
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
                   </div>
                 </div>
