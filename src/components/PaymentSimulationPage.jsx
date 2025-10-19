@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, TrendingUp, Calculator, DollarSign, Calendar, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { auth } from '../firebase/config';
+import { updateUserProgress } from '../utils/userProgress';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, ComposedChart
@@ -408,11 +410,60 @@ const PaymentSimulationPage = ({ onNavigate, navPayload }) => {
       </div>
 
       {/* Content */}
-      <div className="px-8 pb-20">
+      <div className="px-8 pb-12">
         <div className="max-w-6xl mx-auto">
           {calculations.type === 'finance' && renderFinancingOptions()}
           {calculations.type === 'lease' && renderLeaseOptions()}
           {calculations.type === 'lump-sum' && renderLumpSumAnalysis()}
+        </div>
+      </div>
+
+      {/* Next Planet Button */}
+      <div className="px-8 pb-20">
+        <div className="max-w-6xl mx-auto text-center">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-12"
+          >
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={async () => {
+                  // Mark Mars as completed and trigger rocket animation
+                  const user = auth.currentUser;
+                  if (user) {
+                    try {
+                      await updateUserProgress(user.uid, 'mars');
+                      console.log('Mars completed, triggering animation to Earth');
+                      // Navigate with flight payload to trigger rocket animation
+                      onNavigate && onNavigate('solar-system', { 
+                        flight: { from: 'mars', to: 'earth' } 
+                      });
+                    } catch (error) {
+                      console.error('Error updating Mars progress:', error);
+                      // Fallback: navigate without animation
+                      onNavigate && onNavigate('earth');
+                    }
+                  } else {
+                    // No user logged in, just navigate
+                    onNavigate && onNavigate('earth');
+                  }
+                }}
+                className="relative px-20 py-6 text-2xl font-semibold rounded-2xl border transition-all duration-300 backdrop-blur-lg min-w-[200px] bg-gradient-to-r from-blue-500/30 to-purple-600/30 hover:from-blue-500/40 hover:to-purple-600/40 border-blue-400/60 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:scale-105"
+              >
+                Next Planet →
+              </motion.button>
+              
+              {/* Button glow effect */}
+              <div className="absolute inset-0 rounded-2xl bg-blue-400/20 blur-xl -z-10 scale-110 opacity-60"></div>
+            </div>
+            <p className="text-orange-200 text-sm mt-4 max-w-md mx-auto">
+              Continue your journey to explore comprehensive purchase planning options
+            </p>
+          </motion.div>
         </div>
       </div>
     </motion.div>

@@ -30,6 +30,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
   const saturnRef = useRef(null);
   const jupiterRef = useRef(null);
   const marsRef = useRef(null);
+  const earthRef = useRef(null);
   // Evenly spaced planets extending left from the sun
   const spacingPx = 170;
   const startOffsetPx = 450; // distance of Mercury from the sun
@@ -68,6 +69,7 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       case 6: return saturnRef;
       case 5: return jupiterRef;
       case 4: return marsRef;
+      case 3: return earthRef;
       default: return null;
     }
   };
@@ -117,6 +119,38 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
     loadUserProgress();
   }, []);
 
+  // Reload user progress when returning from planet completion
+  useEffect(() => {
+    const reloadProgressIfNeeded = async () => {
+      const user = auth.currentUser;
+      if (user && navPayload?.flight) {
+        // Small delay to ensure progress update has been saved
+        setTimeout(async () => {
+          try {
+            const progress = await getUserProgress(user.uid);
+            setUserProgress(progress);
+            
+            // Update landed planet
+            let landed = null;
+            if (progress.journeyStarted) {
+              if (progress.currentPlanet && !progress[`${progress.currentPlanet}Completed`]) {
+                landed = progress.currentPlanet;
+              } else {
+                const planetIds = PLANET_ORDER.map(p => p.id);
+                landed = planetIds.find(planet => !progress[`${planet}Completed`]) || 'earth';
+              }
+            }
+            setLandedPlanet(landed);
+          } catch (error) {
+            console.error('Error reloading user progress:', error);
+          }
+        }, 1000);
+      }
+    };
+
+    reloadProgressIfNeeded();
+  }, [navPayload]);
+
   const handlePlanetClick = async (planetName) => {
     const planetId = planetName.toLowerCase();
     
@@ -151,6 +185,8 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
       onNavigate('jupiter');
     } else if (planetName === 'Mars') {
       onNavigate('mars');
+    } else if (planetName === 'Earth') {
+      onNavigate('earth');
     }
   };
 
@@ -375,6 +411,48 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
           requestAnimationFrame(() => computeAndStart());
         });
       }, 300);
+    } else if (flight.from === 'mars' && flight.to === 'earth') {
+      // Mars to Earth transfer animation
+      const computeAndStart = () => {
+        if (!marsRef.current || !earthRef.current) return;
+        
+        // Try to get the landed spaceship position first
+        const landedSpaceshipElement = document.getElementById('landed-spaceship-mars');
+        let spaceshipStartPosition;
+        
+        if (landedSpaceshipElement) {
+          const spaceshipRect = landedSpaceshipElement.getBoundingClientRect();
+          spaceshipStartPosition = {
+            x: spaceshipRect.left + spaceshipRect.width / 2,
+            y: spaceshipRect.top + spaceshipRect.height / 2
+          };
+        } else {
+          // Fallback to planet center if no landed spaceship found
+          const mCenter = getPlanetImageCenter(marsRef);
+          if (!mCenter) return;
+          spaceshipStartPosition = { 
+            x: mCenter.x, 
+            y: mCenter.y - 40 // Approximate offset for spaceship position
+          };
+        }
+        
+        const earthCenter = getPlanetImageCenter(earthRef);
+        if (!earthCenter) return;
+        
+        console.log('Mars to Earth - Spaceship start position:', spaceshipStartPosition, 'Earth center:', earthCenter);
+        
+        setAnimationInProgress(true);
+        setSpaceshipStartPos(spaceshipStartPosition);
+        setSpaceshipEndPos(earthCenter);
+        setShowSpaceship(true);
+      };
+      
+      // Give more time for layout to settle
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => computeAndStart());
+        });
+      }, 300);
     }
   }, [navPayload, hasPlayedTransfer]);
 
@@ -435,9 +513,9 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
         {/* Planet */}
         <div
           ref={getPlanetRef(planet.id)}
-          onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : planet.id === 5 ? () => handlePlanetClick('Jupiter') : planet.id === 4 ? () => handlePlanetClick('Mars') : undefined}
+          onClick={planet.id === 8 ? () => handlePlanetClick('Neptune') : planet.id === 7 ? () => handlePlanetClick('Uranus') : planet.id === 6 ? () => handlePlanetClick('Saturn') : planet.id === 5 ? () => handlePlanetClick('Jupiter') : planet.id === 4 ? () => handlePlanetClick('Mars') : planet.id === 3 ? () => handlePlanetClick('Earth') : undefined}
           className={`relative rounded-full shadow-2xl ${
-            (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) ? 
+            (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4 || planet.id === 3) ? 
               userProgress && (canAccessPlanet(userProgress, planet.name.toLowerCase()) || userProgress?.[`${planet.name.toLowerCase()}Completed`]) || planet.id === 8 ?
                 'cursor-pointer hover:scale-110 transition-transform duration-300' :
                 'cursor-not-allowed opacity-50' :
@@ -540,9 +618,9 @@ const SolarSystem = ({ onNavigate, navPayload, userProfile }) => {
               {/* Planet label */}
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
                 <div className={`w-[80px] text-center py-1.5 rounded-full text-sm font-semibold shadow-lg ${
-                  (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4) 
+                  (planet.id === 8 || planet.id === 7 || planet.id === 6 || planet.id === 5 || planet.id === 4 || planet.id === 3) 
                     ? userProgress && (canAccessPlanet(userProgress, planet.name.toLowerCase()) || userProgress?.[`${planet.name.toLowerCase()}Completed`]) || planet.id === 8
-                      ? (planet.id === 4 ? 'bg-red-500/90 text-white animate-pulse' : planet.id === 5 ? 'bg-orange-500/90 text-white animate-pulse' : 'bg-blue-500/90 text-white animate-pulse')
+                      ? (planet.id === 4 ? 'bg-red-500/90 text-white animate-pulse' : planet.id === 5 ? 'bg-orange-500/90 text-white animate-pulse' : planet.id === 3 ? 'bg-blue-500/90 text-white animate-pulse' : 'bg-blue-500/90 text-white animate-pulse')
                       : 'bg-gray-500/90 text-gray-300'
                     : 'bg-white/90 text-gray-900'
                 }`}>

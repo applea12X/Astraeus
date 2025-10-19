@@ -215,7 +215,7 @@ function App() {
             selectedVehicle={selectedVehicle}
           />
         );
-      case 'jupiter-plan':
+      case 'earth':
         return (
           <JupiterPurchasePlan 
             onNavigate={handleNavigate}
