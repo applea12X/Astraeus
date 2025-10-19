@@ -307,6 +307,8 @@ const SaturnPage = ({ onNavigate, preferences, financialInfo, userProfile }) => 
       // Build comprehensive prompt with ALL data
       const prompt = `You are a Toyota car expert and financial advisor. Based on ALL the customer information below, recommend exactly 3 Toyota or Lexus vehicles that would be the best fit. Use their financial profile to suggest appropriate financing options.
 
+**CRITICAL REQUIREMENT: ONLY recommend vehicles from model years 2023 and 2024. DO NOT recommend any vehicles from 2022 or earlier, or 2025 or later.**
+
 **Customer Profile:**
 ${finalUserProfile ? `
 - Name: ${finalUserProfile.firstName} ${finalUserProfile.lastName}
@@ -699,16 +701,16 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
         </motion.button>
 
         {/* Vehicle Detail Content */}
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-24">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
           <motion.div
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="space-y-8"
+            className="space-y-6"
           >
             {/* Vehicle Hero */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 shadow-2xl">
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl">
               {/* Vehicle Image */}
-              <div className="mt-10 mb-10 w-full h-96 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-2xl mb-8 border border-amber-400/30 overflow-hidden">
+              <div className="w-full h-64 sm:h-80 bg-gradient-to-br from-amber-500/20 to-yellow-600/20 rounded-2xl mb-6 border border-amber-400/30 overflow-hidden">
                 {selectedVehicle.imageUrl ? (
                   <img 
                     src={selectedVehicle.imageUrl} 
@@ -729,8 +731,8 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               </div>
 
               {/* Vehicle Name */}
-              <h1 className="text-5xl font-bold text-white mb-2">{selectedVehicle.name}</h1>
-              <p className="text-2xl text-amber-200 mb-6">{selectedVehicle.year} {selectedVehicle.model}</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{selectedVehicle.name}</h1>
+              <p className="text-lg sm:text-xl text-amber-200 mb-4">{selectedVehicle.year} {selectedVehicle.model}</p>
               
               {/* Previously Selected Indicator */}
               {savedVehicleSelection && selectedVehicle.name === savedVehicleSelection.name && (
@@ -741,7 +743,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               )}
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 <div className="bg-white/5 rounded-xl p-4 text-center">
                   <Calendar className="w-6 h-6 text-amber-400 mx-auto mb-2" />
                   <p className="text-white/60 text-sm">Year</p>
@@ -767,9 +769,9 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               </div>
 
               {/* Pricing */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-2xl p-6 border border-green-400/30">
-                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-2xl p-4 sm:p-5 border border-green-400/30">
+                  <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
                     <DollarSign className="w-6 h-6 text-green-400" />
                     Purchase Price
                   </h3>
@@ -789,8 +791,8 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-2xl p-6 border border-blue-400/30">
-                  <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-2xl p-4 sm:p-5 border border-blue-400/30">
+                  <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
                     <DollarSign className="w-6 h-6 text-blue-400" />
                     Lease Options
                   </h3>
@@ -805,14 +807,14 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               </div>
 
               {/* Why It's a Good Fit */}
-              <div className="bg-white/5 rounded-2xl p-6 mb-6">
-                <h3 className="text-2xl font-bold text-amber-400 mb-4">Why This is Perfect For You</h3>
-                <p className="text-white text-lg leading-relaxed">{selectedVehicle.whyGoodFit}</p>
+              <div className="bg-white/5 rounded-2xl p-4 sm:p-5 mb-5">
+                <h3 className="text-xl font-bold text-amber-400 mb-3">Why This is Perfect For You</h3>
+                <p className="text-white text-base leading-relaxed">{selectedVehicle.whyGoodFit}</p>
               </div>
 
               {/* Key Features */}
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-white mb-4">Key Features</h3>
+              <div className="mb-5">
+                <h3 className="text-xl font-bold text-white mb-3">Key Features</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {selectedVehicle.keyFeatures.map((feature, idx) => (
                     <div key={idx} className="flex items-start gap-3 bg-white/5 rounded-xl p-4">
@@ -824,9 +826,9 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
               </div>
 
               {/* Pros and Cons */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div>
-                  <h3 className="text-2xl font-bold text-green-400 mb-4">Pros</h3>
+                  <h3 className="text-xl font-bold text-green-400 mb-3">Pros</h3>
                   <ul className="space-y-2">
                     {selectedVehicle.pros.map((pro, idx) => (
                       <li key={idx} className="flex items-start gap-3 text-white">
@@ -837,7 +839,7 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-orange-400 mb-4">Cons</h3>
+                  <h3 className="text-xl font-bold text-orange-400 mb-3">Cons</h3>
                   <ul className="space-y-2">
                     {selectedVehicle.cons.map((con, idx) => (
                       <li key={idx} className="flex items-start gap-3 text-white">
@@ -851,20 +853,20 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4 justify-center flex-wrap">
+            <div className="flex gap-3 justify-center flex-wrap pt-2">
               <button
                 onClick={() => setSelectedVehicle(null)}
-                className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold rounded-xl transition-all"
+                className="px-6 sm:px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold rounded-xl transition-all"
               >
                 View Other Vehicles
               </button>
               <button
                 onClick={async () => {
                   if (savingSelection) return; // Prevent multiple clicks
-                  
+
                   // Save vehicle selection and mark Saturn as completed
                   const saved = await saveVehicleSelection(selectedVehicle);
-                  
+
                   if (saved) {
                     // Navigate back to solar system with flight animation from Saturn to Jupiter
                     if (onNavigate) {
@@ -881,9 +883,9 @@ CRITICAL: Return ONLY the JSON array. No other text before or after.`;
                   }
                 }}
                 disabled={savingSelection}
-                className={`px-8 py-4 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2 ${
-                  savingSelection 
-                    ? 'bg-gray-600 cursor-not-allowed' 
+                className={`px-6 sm:px-8 py-3 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2 ${
+                  savingSelection
+                    ? 'bg-gray-600 cursor-not-allowed'
                     : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500'
                 }`}
               >
