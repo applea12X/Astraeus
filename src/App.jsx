@@ -9,6 +9,9 @@ import SignInForm from './components/ui/SignInForm';
 import SignUpForm from './components/ui/SignUpForm';
 import SolarSystem from './components/SolarSystem';
 import NeptunePage from './components/NeptunePage';
+import MarsPage from './components/MarsPage';
+import MarsFormPage from './components/MarsFormPage';
+import PaymentSimulationPage from './components/PaymentSimulationPage';
 import ProfilePage from './components/ProfilePage';
 import UranusPage from './components/UranusPage';
 import UranusFormPage from './components/UranusFormPage';
@@ -147,6 +150,18 @@ function App() {
       case 'neptune':
         console.log('Navigating to Neptune page...');
         return <NeptunePage onNavigate={handleNavigate} />;
+      case 'mars':
+        return <MarsPage onNavigate={handleNavigate} />;
+      case 'mars-form':
+        return (
+          <MarsFormPage 
+            onNavigate={handleNavigate} 
+            financialInfo={financialInfo}
+            vehiclePreferences={vehiclePreferences}
+          />
+        );
+      case 'payment-simulations':
+        return <PaymentSimulationPage onNavigate={handleNavigate} navPayload={navPayload} />;
       case 'financial-info':
         return <FinancialInfoPage onNavigate={handleNavigate} onSubmitFinancialInfo={handleSubmitFinancialInfo} />;
       case 'profile':
