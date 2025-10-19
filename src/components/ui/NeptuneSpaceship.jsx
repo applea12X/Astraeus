@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { Rocket } from 'lucide-react';
 
@@ -6,57 +6,12 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
   const SHIP_SIZE = 128; // matches w-32 h-32
   const HALF_SHIP = SHIP_SIZE / 2;
 
-  // Use state to trigger re-renders
-  const [style, setStyle] = useState({
-    position: 'fixed',
-    left: 0,
-    top: 0,
-    transform: 'scale(0.6) rotate(0deg)',
-    opacity: 1,
-    transformOrigin: 'center',
-    zIndex: 9999,
-    pointerEvents: 'none'
-  });
-
   // Anchor the ship's center to the provided start position
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const scale = useMotionValue(0.6);
   const rotate = useMotionValue(0);
   const opacity = useMotionValue(1);
-
-  // Update style whenever motion values change
-  useEffect(() => {
-    const unsubscribeX = x.on('change', (latest) => {
-      setStyle(prev => ({ ...prev, left: latest }));
-    });
-    const unsubscribeY = y.on('change', (latest) => {
-      setStyle(prev => ({ ...prev, top: latest }));
-    });
-    const unsubscribeScale = scale.on('change', (latest) => {
-      setStyle(prev => ({ 
-        ...prev, 
-        transform: `scale(${latest}) rotate(${rotate.get()}deg)` 
-      }));
-    });
-    const unsubscribeRotate = rotate.on('change', (latest) => {
-      setStyle(prev => ({ 
-        ...prev, 
-        transform: `scale(${scale.get()}) rotate(${latest}deg)` 
-      }));
-    });
-    const unsubscribeOpacity = opacity.on('change', (latest) => {
-      setStyle(prev => ({ ...prev, opacity: latest }));
-    });
-
-    return () => {
-      unsubscribeX();
-      unsubscribeY();
-      unsubscribeScale();
-      unsubscribeRotate();
-      unsubscribeOpacity();
-    };
-  }, [x, y, scale, rotate, opacity]);
 
   useEffect(() => {
     const run = async () => {
@@ -144,13 +99,30 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
   }, [startPosition, endPosition, onAnimationComplete, x, y, scale, rotate, opacity]);
 
   return (
-    <div style={style}>
+    <motion.div
+      className="fixed z-50 pointer-events-none"
+      style={{ 
+        top: 0,
+        left: 0,
+        x, 
+        y, 
+        scale,
+        rotate,
+        opacity,
+        originX: 0.5,
+        originY: 0.5
+      }}
+    >
       <div className="relative">
         {/* Spaceship Body */}
         <div className="relative w-32 h-32 flex items-center justify-center">
-          {/* Simple rocket shape */}
+          {/* Rocket Icon as ship */}
           <div className="absolute transform -rotate-45">
-            <div className="w-24 h-24 bg-red-500 rounded-t-full" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+            <Rocket 
+              className="w-24 h-24 text-red-500 drop-shadow-2xl" 
+              strokeWidth={2} 
+              fill="#ef4444" 
+            />
           </div>
           
           {/* Mascot "Cam" in the window */}
@@ -159,30 +131,61 @@ const NeptuneSpaceship = ({ startPosition, endPosition, onAnimationComplete }) =
           </div>
 
           {/* Engine glow/fire trail */}
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 animate-pulse">
+          <motion.div
+            className="absolute -bottom-4 -right-4 w-20 h-20"
+            animate={{
+              opacity: [0.6, 1, 0.6],
+              scale: [0.8, 1.2, 0.8]
+            }}
+            transition={{
+              duration: 0.3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
             <div className="w-full h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 rounded-full blur-xl opacity-80"></div>
-          </div>
+          </motion.div>
 
           {/* Stars trailing effect */}
-          <div className="absolute -left-8 top-1/2 transform -translate-y-1/2 animate-pulse">
+          <motion.div
+            className="absolute -left-8 top-1/2 transform -translate-y-1/2"
+            animate={{
+              opacity: [0, 1, 0],
+              scale: [0, 1, 1.5]
+            }}
+            transition={{
+              duration: 0.5,
+              repeat: Infinity,
+              ease: "easeOut"
+            }}
+          >
             <div className="text-yellow-300 text-4xl">✨</div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Sparkle effects */}
         {[...Array(8)].map((_, i) => (
-          <div
+          <motion.div
             key={i}
-            className="absolute w-3 h-3 bg-white rounded-full animate-pulse"
+            className="absolute w-3 h-3 bg-white rounded-full"
             style={{
               left: Math.random() * 80 - 40,
               top: Math.random() * 80 - 40,
-              animationDelay: `${i * 0.15}s`,
+            }}
+            animate={{
+              opacity: [0, 1, 0],
+              scale: [0, 1.5, 0]
+            }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              delay: i * 0.15,
+              ease: "easeInOut"
             }}
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
