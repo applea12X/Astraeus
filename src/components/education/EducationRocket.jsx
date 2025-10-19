@@ -65,35 +65,87 @@ const EducationRocket = ({ user, userProfile }) => {
           <div className="absolute bottom-0 -left-2 w-3 h-4 bg-gray-600 transform skew-x-12 rounded-bl-lg"></div>
           <div className="absolute bottom-0 -right-2 w-3 h-4 bg-gray-600 transform -skew-x-12 rounded-br-lg"></div>
 
-          {/* Rocket flames */}
+          {/* Left Fire Blaster */}
           <motion.div
             animate={{
               scaleY: [0.8, 1.2, 0.8],
               opacity: [0.7, 1, 0.7]
             }}
             transition={{
-              duration: 0.5,
+              duration: 0.4,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute -bottom-4 left-1/2 transform -translate-x-1/2"
+            className="absolute -bottom-3 left-3 transform rotate-12"
           >
-            <div className="w-3 h-6 bg-gradient-to-b from-orange-500 to-yellow-500 rounded-b-full"></div>
+            <div 
+              className="w-3 h-5 bg-gradient-to-b from-orange-500 to-yellow-500"
+              style={{
+                clipPath: 'polygon(30% 0%, 70% 0%, 100% 70%, 50% 100%, 0% 70%)'
+              }}
+            ></div>
           </motion.div>
+          <motion.div
+            animate={{
+              scaleY: [1.1, 0.7, 1.1],
+              opacity: [0.5, 0.8, 0.5]
+            }}
+            transition={{
+              duration: 0.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.1
+            }}
+            className="absolute -bottom-4 left-3 transform rotate-12"
+          >
+            <div 
+              className="w-4 h-4 bg-gradient-to-b from-yellow-400 to-transparent opacity-60 blur-sm"
+              style={{
+                clipPath: 'polygon(25% 0%, 75% 0%, 100% 80%, 50% 100%, 0% 80%)'
+              }}
+            ></div>
+          </motion.div>
+
+          {/* Right Fire Blaster */}
           <motion.div
             animate={{
               scaleY: [1.2, 0.8, 1.2],
               opacity: [1, 0.7, 1]
             }}
             transition={{
-              duration: 0.5,
+              duration: 0.4,
               repeat: Infinity,
               ease: "easeInOut",
               delay: 0.2
             }}
-            className="absolute -bottom-3 left-1/2 transform -translate-x-1/2"
+            className="absolute -bottom-3 right-3 transform -rotate-12"
           >
-            <div className="w-2 h-4 bg-gradient-to-b from-red-500 to-orange-500 rounded-b-full"></div>
+            <div 
+              className="w-3 h-5 bg-gradient-to-b from-red-500 to-orange-500"
+              style={{
+                clipPath: 'polygon(30% 0%, 70% 0%, 100% 70%, 50% 100%, 0% 70%)'
+              }}
+            ></div>
+          </motion.div>
+          <motion.div
+            animate={{
+              scaleY: [0.9, 1.3, 0.9],
+              opacity: [0.4, 0.9, 0.4]
+            }}
+            transition={{
+              duration: 0.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.3
+            }}
+            className="absolute -bottom-4 right-3 transform -rotate-12"
+          >
+            <div 
+              className="w-4 h-4 bg-gradient-to-b from-orange-400 to-transparent opacity-60 blur-sm"
+              style={{
+                clipPath: 'polygon(25% 0%, 75% 0%, 100% 80%, 50% 100%, 0% 80%)'
+              }}
+            ></div>
           </motion.div>
 
           {/* Shine effect */}
