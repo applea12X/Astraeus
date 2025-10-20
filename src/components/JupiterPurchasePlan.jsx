@@ -167,11 +167,29 @@ const JupiterPurchasePlan = ({ onNavigate, selectedVehicle, financialInfo, payme
     { category: 'Financial', items: ['Proof of insurance or insurance quote', 'Down payment (cashier\'s check or financing pre-approval)', 'Current vehicle title (if trading in)'] }
   ];
 
-  // Nearest dealers (mock data - in production, use geolocation API)
+  // Nearest dealers - Actual Austin, TX area Toyota dealerships
   const nearbyDealers = [
-    { name: 'Toyota of Downtown', distance: '3.2 miles', phone: '(555) 123-4567', address: '123 Main St' },
-    { name: 'Premier Toyota', distance: '5.8 miles', phone: '(555) 234-5678', address: '456 Auto Blvd' },
-    { name: 'City Toyota Center', distance: '8.1 miles', phone: '(555) 345-6789', address: '789 Commerce Dr' }
+    { 
+      name: 'Charles Maund Toyota', 
+      distance: '4.2 miles', 
+      phone: '(512) 454-2981', 
+      address: '7901 N Lamar Blvd, Austin, TX 78752',
+      website: 'https://www.charlesmaundtoyota.com'
+    },
+    { 
+      name: 'Toyota of South Austin', 
+      distance: '5.6 miles', 
+      phone: '(512) 444-2098', 
+      address: '4800 IH-35 South, Austin, TX 78745',
+      website: 'https://www.autonationtoyotasouthaustin.com/'
+    },
+    { 
+      name: 'Round Rock Toyota', 
+      distance: '18.3 miles', 
+      phone: '(512) 310-6969', 
+      address: '2800 N I-35, Round Rock, TX 78681',
+      website: 'https://www.roundrocktoyota.com'
+    }
   ];
 
   const toggleStep = (stepId) => {
@@ -578,14 +596,29 @@ const JupiterPurchasePlan = ({ onNavigate, selectedVehicle, financialInfo, payme
                   <p className="text-gray-400 text-sm mb-3">{dealer.address}</p>
                   <a 
                     href={`tel:${dealer.phone}`}
-                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors text-sm mb-2"
                   >
                     <Phone className="w-4 h-4" />
                     {dealer.phone}
                   </a>
-                  <button className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-indigo-500 hover:to-purple-500 transition-colors">
-                    Schedule Visit
-                  </button>
+                  <div className="flex gap-2 mt-4">
+                    <a
+                      href={dealer.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 px-4 py-2 bg-white/[0.08] border border-white/[0.12] text-white rounded-lg text-sm font-medium hover:bg-white/[0.12] transition-colors text-center"
+                    >
+                      Visit Website
+                    </a>
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dealer.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-indigo-500 hover:to-purple-500 transition-colors text-center"
+                    >
+                      Get Directions
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>

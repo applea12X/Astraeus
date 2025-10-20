@@ -139,6 +139,32 @@ Respond in JSON format:
         if (Object.keys(financialData).length > 0) {
           await saveFinancialDataToFirebase(financialData);
         }
+
+        // Set W2 verification flag in users collection for dealer view
+        const user = auth.currentUser;
+        if (user) {
+          try {
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, {
+              w2Verified: true,
+              w2UploadedAt: new Date().toISOString()
+            });
+            console.log('✅ W2 verification flag set in users collection');
+          } catch (error) {
+            // If user document doesn't exist, create it with the flag
+            if (error.code === 'not-found') {
+              await setDoc(userRef, {
+                email: user.email,
+                w2Verified: true,
+                w2UploadedAt: new Date().toISOString(),
+                createdAt: new Date().toISOString()
+              });
+              console.log('✅ W2 verification flag set in new users document');
+            } else {
+              console.error('Error setting W2 verification flag:', error);
+            }
+          }
+        }
       } else {
         setW2Status('failed');
         setErrorMessage(result.reason || 'Document verification failed');
@@ -177,6 +203,32 @@ Respond in JSON format:
         
         if (Object.keys(financialData).length > 0) {
           await saveFinancialDataToFirebase(financialData);
+        }
+
+        // Set pay stub verification flag in users collection for dealer view
+        const user = auth.currentUser;
+        if (user) {
+          try {
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, {
+              payStubVerified: true,
+              payStubUploadedAt: new Date().toISOString()
+            });
+            console.log('✅ Pay stub verification flag set in users collection');
+          } catch (error) {
+            // If user document doesn't exist, create it with the flag
+            if (error.code === 'not-found') {
+              await setDoc(userRef, {
+                email: user.email,
+                payStubVerified: true,
+                payStubUploadedAt: new Date().toISOString(),
+                createdAt: new Date().toISOString()
+              });
+              console.log('✅ Pay stub verification flag set in new users document');
+            } else {
+              console.error('Error setting pay stub verification flag:', error);
+            }
+          }
         }
       } else {
         setPayStubStatus('failed');
